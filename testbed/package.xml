@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>testbed_nodes</name>
+  <version>0.6.2</version>
+  <description>
+    ROS2 nodes for the Mininet-WiFi testbed.
+  </description>
+  <maintainer email="bdallen@nps.edu">Bruce Allen</maintainer>
+  <license>your licnese</license>
+
+  <author>your name</author>
+  <author email="bdallen@nps.edu">Bruce Allen</author>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
