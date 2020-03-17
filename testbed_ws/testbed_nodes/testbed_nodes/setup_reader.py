@@ -1,34 +1,17 @@
 import csv
+from collections import defaultdict
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
      QoSReliabilityPolicy
 from rclpy.qos import QoSProfile
 
-PUBLISH_HEADER = "role,subscription,frequency,size," \
-                 "history,depth,reliability,durability"
-SUBSCRIBE_HEADER = "role,subscription," \
-                   "history,depth,reliability,durability,,"
-
-def _multiple(node):
-    entries = list()
-    if node[0] == "R" and "-" in node:
-        start,stop = node[1:].split("-")
-        for i in range(int(start), int(stop)+1):
-            entries.append("R%d"%i)
-    else:
-        entries.append(node)
-    return entries
-
-def _validate_header(row, mode):
-    csv_row = ",".join(row).lower()
-    if mode == "publish":
-        if csv_row != PUBLISH_HEADER:
-            raise RuntimeError("Invalid row in publish section: %s"%csv_row)
-    elif mode == "subscribe":
-        if csv_row != SUBSCRIBE_HEADER:
-            raise RuntimeError("Invalid row in subscribe section: %s"%csv_row)
-    else:
-        # treat this as a comment
-        print("Table comment: %s"%csv_row)
+# modes: start, publishers, subscribers, mobilities
+_PUBLISH = ["role", "subscription", "frequency,size",
+            "history", "depth", "reliability", "durability"]
+_SUBSCRIBE = ["role", "subscription",
+              "history", "depth", "reliability", "durability"]
+_MOBILITY = ["role", "x", "y", "z", "walks"]
+HEADERS={"publishers":_PUBLISH, "subscribers":_SUBSCRIBE,
+         "mobilities":_MOBILITY}
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def _qos_profile(history, depth, reliability, durability):
@@ -36,28 +19,28 @@ def _qos_profile(history, depth, reliability, durability):
     profile = QoSProfile(depth = depth)
 
     # history
-    if history.lower() == "keep_all":
+    if history == "keep_all":
         profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_ALL
-    elif history.lower() == "keep_last":
+    elif history == "keep_last":
         profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST
     else:
         raise RuntimeError("Invalid history policy: %s"%history)
 
     # reliability
-    if reliability.lower() == "reliable":
+    if reliability == "reliable":
         profile.reliability = \
                    QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE
-    elif reliability.lower() == "best_effort":
+    elif reliability == "best_effort":
         profile.reliability = \
                    QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
     else:
         raise RuntimeError("Invalid reliability policy: %s"%reliability)
 
     # durability
-    if durability.lower() == "transient_local":
+    if durability == "transient_local":
         profile.durability = \
                    QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
-    elif durability.lower() == "volatile":
+    elif durability == "volatile":
         profile.durability = \
                    QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE
     else:
@@ -88,47 +71,89 @@ class SubscribeRecord():
         durability = row[5]          # transient_local|volatile
         self.qos_profile = _qos_profile(history, depth, reliability, durability)
 
+class MobilityRecord():
+    def __init__(self, row):
+        self.role = row[0]
+        self.x = float(row[1])
+        self.y = float(row[2])
+        self.z = float(row[3])
+        if row[4] == "true":
+            moves = True
+        elif row[4] == "false":
+            moves = False
+        else:
+            raise RuntimeError("Invalid field.  Aborting.")
+    def position_string():
+        return "%f,%f,%f"%(x,y,z)
+
+# get lists of subscriber robot names by key=subscription, value=list(names)
+def _recipients(subscribers, mobilities):
+
+    # get subscribers: key=subscription, value=list(robot names)
+    all_recipients = defaultdict(list)
+    for i, mobility in enumerate(mobilities):
+        role = mobility.role
+        for subscriber in subscribers:
+             if subscriber.role == role:
+                 robot_name = "r%d"%i
+                 all_recipients[subscriber.subscription].append(robot_name)
+    return all_recipients
+
 # throws
-def read_setup(filename, verbose):
+def read_setup(filename):
     publishers = list()
     subscribers = list()
+    mobilities = list()
 
     with open(filename) as f:
         mode="start"
         reader = csv.reader(f)
+        total_count = 0
         for row in reader:
-            if verbose:
-                print("Row: %s"%",".join(row))
+            print("Row: %s"%",".join(row))
 
             # blank first column
             if not row or not row[0]:
                 continue
 
+            # lowercase the row
+            row=[x.lower() for x in row]
+
             # mode publish
-            if row[0].lower()=="publish":
+            if row[0]=="publishers":
                 mode = "publish"
                 continue
 
             # mode subscribe
-            if row[0].lower()=="subscribe":
+            if row[0]=="subscribers":
                 mode = "subscribe"
                 continue
 
-            # row [3] is not digit so it must be a header
-            if not row[3].isdigit():
-                # validate header
-                _validate_header(row, mode)
+            # mode mobility
+            if row[0]=="mobilities":
+                mode = "mobility"
                 continue
 
-            # valid entry
+            # allow valid header
+            if row[0] in HEADERS:
+                header = headers[row[0]]
+                if header == row[:len(header)]:
+                    continue
+                else:
+                    raise RuntimeError("Invalid header.  Aborting.")
+
+            # parse by mode
             if mode == "publish":
                 publishers.append(PublishRecord(row))
             elif mode == "subscribe":
                 subscribers.append(SubscribeRecord(row))
+            elif mode == "mobility":
+                mobilities.append(MobilityRecord(row))
             else:
                 print("invalid mode '%s' for row '%s'"%(
                                             mode, ",".join(row)))
                 raise RuntimeError("Invalid table.  Aborting")
 
-        return publishers, subscribers
+        recipients = _recipients(subscribers, mobilities)
+        return publishers, subscribers, mobilities, recipients
 

@@ -1,8 +1,0 @@
-Publish
-Role,Subscription,Frequency,Size,History,Depth,Reliability,Durability
-GS,odometry,10,500,keep_last,0,reliable,volatile
-
-Subscribe
-Role,Subscription,History,Depth,Reliability,Durability,,
-red_team,odometry,keep_last,0,reliable,volatile
-

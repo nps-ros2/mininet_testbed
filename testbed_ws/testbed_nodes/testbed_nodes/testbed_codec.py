@@ -2,7 +2,7 @@
 from time import perf_counter
 
 """Return CSV encoding of source, message_name, message number, time,
-   padding size.  Padded data is message_name[0]."""
+   padding size.  Padded data is bytes of message_name[0]."""
 def testbed_encode(source, message_name, message_number, padding_size):
     payload = message_name[0]*padding_size
     msg = "%s,%s,%d,%f,%s"%(source, message_name, message_number,
