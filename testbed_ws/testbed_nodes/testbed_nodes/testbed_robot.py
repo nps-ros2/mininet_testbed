@@ -72,7 +72,7 @@ class TestbedRobot(Node):
         self.f = f
 
         # get setup parameters
-        publishers, subscribers, mobilities, all_recipients = read_setup(
+        publishers, subscribers, robots, all_recipients = read_setup(
                                                                setup_file)
 
         # start publishers for this role

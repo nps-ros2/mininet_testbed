@@ -19,16 +19,16 @@ def start_runner(setup_file, out_file):
         f.flush()
 
     # get total count of Wifi devices
-    _publishers, _subscribers, mobilities = read_setup(infile)
+    _publishers, _subscribers, robots = read_setup(infile)
 
     "Create a network."
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
     info("*** Creating nodes\n")
     stations = list()
-    for i, mobility in enumerate(mobilities):
+    for i, robot in enumerate(robots):
         station_name = "sta%d"%i # sta0
-        position = [mobility.position_string]
+        position = [robot.position_string]
         station_range = 100
         station = net.addStation(station_name, position=position,
                                  range=station_range)
@@ -41,7 +41,7 @@ def start_runner(setup_file, out_file):
 
     info("*** Creating links\n")
 
-    for i in range(len(mobilities)):
+    for i in range(len(robots)):
         station = stations[i]
         net.addLink(station, cls=adhoc, intf='sta1-wlan0', ssid='adhocNet',
                     mode='g', channel=5, ht_cap='HT40+')
@@ -50,10 +50,10 @@ def start_runner(setup_file, out_file):
     net.build()
 
     info("\n*** Starting ROS2 nodes...\n")
-    for i, mobility in enumerate(mobilities):
+    for i, robot in enumerate(robots):
         station = stations[i]
         robot_name = "r%d"%i
-        role = mobility.role
+        role = robot.role
         station.cmd("ros2 run testbed_nodes testbed_robot %s %s %s %s &")%(
                                 robot_name, role, setup_file, out_file)
 

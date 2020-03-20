@@ -4,14 +4,14 @@ from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
      QoSReliabilityPolicy
 from rclpy.qos import QoSProfile
 
-# modes: start, publishers, subscribers, mobilities
+# modes: start, publishers, subscribers, robots
 _PUBLISH = ["role", "subscription", "frequency,size",
             "history", "depth", "reliability", "durability"]
 _SUBSCRIBE = ["role", "subscription",
               "history", "depth", "reliability", "durability"]
-_MOBILITY = ["role", "x", "y", "z", "walks"]
+_ROBOT = ["role", "x", "y", "z", "walks"]
 HEADERS={"publishers":_PUBLISH, "subscribers":_SUBSCRIBE,
-         "mobilities":_MOBILITY}
+         "robots":_ROBOT}
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def _qos_profile(history, depth, reliability, durability):
@@ -71,7 +71,7 @@ class SubscribeRecord():
         durability = row[5]          # transient_local|volatile
         self.qos_profile = _qos_profile(history, depth, reliability, durability)
 
-class MobilityRecord():
+class RobotRecord():
     def __init__(self, row):
         self.role = row[0]
         self.x = float(row[1])
@@ -87,12 +87,12 @@ class MobilityRecord():
         return "%f,%f,%f"%(x,y,z)
 
 # get lists of subscriber robot names by key=subscription, value=list(names)
-def _recipients(subscribers, mobilities):
+def _recipients(subscribers, robots):
 
     # get subscribers: key=subscription, value=list(robot names)
     all_recipients = defaultdict(list)
-    for i, mobility in enumerate(mobilities):
-        role = mobility.role
+    for i, robot in enumerate(robots):
+        role = robot.role
         for subscriber in subscribers:
              if subscriber.role == role:
                  robot_name = "r%d"%i
@@ -103,7 +103,7 @@ def _recipients(subscribers, mobilities):
 def read_setup(filename):
     publishers = list()
     subscribers = list()
-    mobilities = list()
+    robots = list()
 
     with open(filename) as f:
         mode="start"
@@ -129,9 +129,9 @@ def read_setup(filename):
                 mode = "subscribe"
                 continue
 
-            # mode mobility
-            if row[0]=="mobilities":
-                mode = "mobility"
+            # mode robot
+            if row[0]=="robots":
+                mode = "robot"
                 continue
 
             # allow valid header
@@ -147,13 +147,13 @@ def read_setup(filename):
                 publishers.append(PublishRecord(row))
             elif mode == "subscribe":
                 subscribers.append(SubscribeRecord(row))
-            elif mode == "mobility":
-                mobilities.append(MobilityRecord(row))
+            elif mode == "robot":
+                robots.append(RobotRecord(row))
             else:
                 print("invalid mode '%s' for row '%s'"%(
                                             mode, ",".join(row)))
                 raise RuntimeError("Invalid table.  Aborting")
 
-        recipients = _recipients(subscribers, mobilities)
-        return publishers, subscribers, mobilities, recipients
+        recipients = _recipients(subscribers, robots)
+        return publishers, subscribers, robots, recipients
 
