@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+# VIM
+*.swp
+*.swo
+
+# runtime
+_mininet_test_outfile
+
 # Distribution / packaging
 .Python
 build/

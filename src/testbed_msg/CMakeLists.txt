@@ -26,6 +26,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/TestbedMessage.msg"
     DEPENDENCIES std_msgs builtin_interfaces)
 
-file(COPY ../csv_setup/example1.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#file(COPY ../scenarios/example1.csv DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 ament_package()

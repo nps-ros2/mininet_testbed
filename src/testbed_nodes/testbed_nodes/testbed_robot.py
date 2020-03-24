@@ -130,7 +130,7 @@ def main():
     parser.add_argument("robot_name", type=str,
                         help="The name of this robot node.")
     parser.add_argument("role", type=str, help="This robot's role")
-    parser.add_argument("setup_file", type=str, help="The CSV setup file.")
+    parser.add_argument("setup_file", type=str, help="The scenario setup file.")
     parser.add_argument("out_file", type=str, help="The output file.")
     args = parser.parse_args()
     print("Starting testbed_robot %s"%args.robot_name)
@@ -140,7 +140,8 @@ def main():
     with open(args.out_file, "w+") as f:
 
         rclpy.init()
-        robot_node = TestbedRobot(args.robot_name, role, args.setup_file, f)
+        robot_node = TestbedRobot(args.robot_name, args.role,
+                                  args.setup_file, f)
         rclpy.spin(robot_node)
         robot_node.destroy_node()
         rclpy.shutdown()

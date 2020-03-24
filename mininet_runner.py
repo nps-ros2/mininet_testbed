@@ -2,6 +2,7 @@
 
 import sys
 from argparse import ArgumentParser
+from os.path import join, expanduser
 
 from mininet.log import setLogLevel, info
 from mn_wifi.link import wmediumd, adhoc
@@ -9,7 +10,7 @@ from mn_wifi.cli import CLI_wifi
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.wmediumdConnector import interference
 
-from setup_reader import read_setup
+from read_robots import read_robots
 
 
 def start_runner(setup_file, out_file):
@@ -19,7 +20,7 @@ def start_runner(setup_file, out_file):
         f.flush()
 
     # get total count of Wifi devices
-    _publishers, _subscribers, robots = read_setup(infile)
+    robots = read_robots(setup_file)
 
     "Create a network."
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
@@ -28,8 +29,9 @@ def start_runner(setup_file, out_file):
     stations = list()
     for i, robot in enumerate(robots):
         station_name = "sta%d"%i # sta0
-        position = [robot.position_string]
+        position = robot.position_string()
         station_range = 100
+        info(" station %s position %s range %d\n"%(station_name, position, station_range))
         station = net.addStation(station_name, position=position,
                                  range=station_range)
         stations.append(station)
@@ -43,7 +45,7 @@ def start_runner(setup_file, out_file):
 
     for i in range(len(robots)):
         station = stations[i]
-        net.addLink(station, cls=adhoc, intf='sta1-wlan0', ssid='adhocNet',
+        net.addLink(station, cls=adhoc, intf='sta%d-wlan0'%i, ssid='adhocNet',
                     mode='g', channel=5, ht_cap='HT40+')
 
     info("*** Starting network\n")
@@ -54,8 +56,10 @@ def start_runner(setup_file, out_file):
         station = stations[i]
         robot_name = "r%d"%i
         role = robot.role
-        station.cmd("ros2 run testbed_nodes testbed_robot %s %s %s %s &")%(
+        cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s &"%(
                                 robot_name, role, setup_file, out_file)
+        info("*** Starting '%s\n'"%cmd)
+        station.cmd(cmd)
 
     info("*** Running CLI\n")
     CLI_wifi(net)
@@ -65,16 +69,12 @@ def start_runner(setup_file, out_file):
 
 if __name__ == '__main__':
     setLogLevel('info')
-    default_setup_file = join(expanduser("~"),
-                         "gits/mininet_testbed/testbed/csv_roles/example1.csv")
-    default_out_file = "_mininet_runner_out"
+
     # args
     parser = ArgumentParser(description="Start Mininet swarm emulation")
-    parser.add_argument("-s","--setup_file", type=str,
-                        help="Testbed setup file", default=default_setup_file)
-    parser.add_argument("-o", "--out_file", type=str,
-                        help="Output file", default=default_out_file)
+    parser.add_argument("setup_file", type=str, help="Testbed setup file")
+    parser.add_argument("out_file", type=str, help="Output file")
     args = parser.parse_args()
 
-    start_runner(args.setup_file, args.out_file)
+    start_runner(expanduser(args.setup_file), expanduser(args.out_file))
 

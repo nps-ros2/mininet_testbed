@@ -1,17 +1,15 @@
 import csv
 from collections import defaultdict
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
-     QoSReliabilityPolicy
-from rclpy.qos import QoSProfile
+     QoSReliabilityPolicy, QoSProfile
 
 # modes: start, publishers, subscribers, robots
-_PUBLISH = ["role", "subscription", "frequency,size",
+_START = []
+_PUBLISH = ["role", "subscription", "frequency", "size",
             "history", "depth", "reliability", "durability"]
 _SUBSCRIBE = ["role", "subscription",
               "history", "depth", "reliability", "durability"]
-_ROBOT = ["role", "x", "y", "z", "walks"]
-HEADERS={"publishers":_PUBLISH, "subscribers":_SUBSCRIBE,
-         "robots":_ROBOT}
+_ROBOT = ["role", "x", "y", "z", "moves"]
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def _qos_profile(history, depth, reliability, durability):
@@ -107,40 +105,42 @@ def read_setup(filename):
 
     with open(filename) as f:
         mode="start"
+        valid_header = _START
         reader = csv.reader(f)
         total_count = 0
         for row in reader:
-            print("Row: %s"%",".join(row))
+            print("mode: %s"%mode)
+            print(valid_header)
 
             # blank first column
             if not row or not row[0]:
                 continue
 
-            # lowercase the row
-            row=[x.lower() for x in row]
+            # lowercase the row and remove spaces
+            row=[x.lower().strip() for x in row]
+            print(row)
 
             # mode publish
             if row[0]=="publishers":
                 mode = "publish"
+                valid_header = _PUBLISH
                 continue
 
             # mode subscribe
             if row[0]=="subscribers":
                 mode = "subscribe"
+                valid_header = _SUBSCRIBE
                 continue
 
             # mode robot
             if row[0]=="robots":
                 mode = "robot"
+                valid_header = _ROBOT
                 continue
 
             # allow valid header
-            if row[0] in HEADERS:
-                header = headers[row[0]]
-                if header == row[:len(header)]:
-                    continue
-                else:
-                    raise RuntimeError("Invalid header.  Aborting.")
+            if row[:len(valid_header)] == valid_header:
+                continue
 
             # parse by mode
             if mode == "publish":
