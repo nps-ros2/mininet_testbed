@@ -7,8 +7,7 @@ from time import perf_counter
 from fcntl import flock, LOCK_EX, LOCK_UN
 import rclpy
 from rclpy.node import Node
-from testbed_msg import TestbedMessage
-from testbed_nodes.testbed_codec import testbed_encode, testbed_decode
+from testbed_msg.msg import TestbedMessage
 from testbed_nodes.setup_reader import read_setup
 
 class TestbedRobot(Node):
@@ -61,7 +60,7 @@ class TestbedRobot(Node):
 
             # log the response metadata
             flock(f, LOCK_EX) # exclusive lock
-            f.write(s)
+            f.write(response)
             flock(f, LOCK_UN) # unlock
         return fn
 
@@ -78,7 +77,7 @@ class TestbedRobot(Node):
         # start publishers for this role
         self.counters = defaultdict(int)
         self.publisher_managers = dict()
-        self.timers = list()
+        self.publisher_timers = list()
         for publisher in publishers:
             # only publish subscriptions assigned to this role
             if publisher.role != role:
@@ -104,17 +103,19 @@ class TestbedRobot(Node):
                                   subscription, publisher.size, recipients, f)
             period = 1/publisher.frequency
             timer = self.create_timer(period, publisher_timer_callback_function)
-            self.timers.append(timer)
+            self.publisher_timers.append(timer)
 
         # start subscribers
         subscriptions = list()
         for subscriber in subscribers:
+            print("subscriber for %s"%subscriber.subscription)
 
             # only subscribe to subscriptions assigned to this role
             if subscriber.role != role:
                 continue
 
-            _subscriber_callback_function = _make_subscriber_callback_function(
+            _subscriber_callback_function = \
+                            self._make_subscriber_callback_function(
                                   subscriber.subscription, f)
 
             subscription = self.create_subscription(
