@@ -58,7 +58,7 @@ def start_runner(setup_file, out_file):
         role = robot.role
         cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s &"%(
                                 robot_name, role, setup_file, out_file)
-        info("*** Starting '%s\n'"%cmd)
+        info("*** Starting '%s'\n"%cmd)
         station.cmd(cmd)
 
     info("*** Running CLI\n")

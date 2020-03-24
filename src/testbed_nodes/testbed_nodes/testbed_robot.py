@@ -7,7 +7,7 @@ from time import perf_counter
 from fcntl import flock, LOCK_EX, LOCK_UN
 import rclpy
 from rclpy.node import Node
-from testtbed_msg import TestbedMessage
+from testbed_msg import TestbedMessage
 from testbed_nodes.testbed_codec import testbed_encode, testbed_decode
 from testbed_nodes.setup_reader import read_setup
 
