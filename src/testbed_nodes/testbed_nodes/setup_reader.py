@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 from collections import defaultdict
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
@@ -109,8 +111,6 @@ def read_setup(filename):
         reader = csv.reader(f)
         total_count = 0
         for row in reader:
-            print("mode: %s"%mode)
-            print(valid_header)
 
             # blank first column
             if not row or not row[0]:
@@ -156,4 +156,18 @@ def read_setup(filename):
 
         recipients = _recipients(subscribers, robots)
         return publishers, subscribers, robots, recipients
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description="Check your setup file.",
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("setup_file", type=str, help="The scenario setup file.")
+    args = parser.parse_args()
+
+    # show setup
+    setup_file = "/home/bruce/gits/mininet_testbed/scenarios/example1.csv"
+    publishers, subscribers, robots, recipients = read_setup(args.setup_file)
+    print("publishers: %d"%len(publishers))
+    print("subscribers: %d"%len(subscribers))
+    print("robots: %d"%len(robots))
+    print("Done.")
 

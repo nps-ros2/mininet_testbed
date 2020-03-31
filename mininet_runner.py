@@ -21,6 +21,7 @@ def start_runner(setup_file, out_file):
 
     # get total count of Wifi devices
     robots = read_robots(setup_file)
+    print("Robot count: %d"%len(robots))
 
     "Create a network."
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
@@ -31,7 +32,8 @@ def start_runner(setup_file, out_file):
         station_name = "sta%d"%i # sta0
         position = robot.position_string()
         station_range = 100
-        info(" station %s position %s range %d\n"%(station_name, position, station_range))
+        info(" station %s position %s range %d\n"%(
+                                  station_name, position, station_range))
         station = net.addStation(station_name, position=position,
                                  range=station_range)
         stations.append(station)
@@ -60,6 +62,9 @@ def start_runner(setup_file, out_file):
                                 robot_name, role, setup_file, out_file)
         info("*** Starting '%s'\n"%cmd)
         station.cmd(cmd)
+
+    # Wireshark
+    stations[0].cmd("wireshark &")
 
     info("*** Running CLI\n")
     CLI_wifi(net)

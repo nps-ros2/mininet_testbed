@@ -17,11 +17,12 @@ class TestbedRobot(Node):
         def fn():
             self.counters[subscription_name] += 1
             transmit_count = self.counters[subscription_name]
-            robot_name = self.robot_name
+
+            print("%s publish %s"%(self.robot_name, subscription_name))
 
             # compose message
             msg = TestbedMessage()
-            msg.publisher_name = robot_name
+            msg.publisher_name = self.robot_name
             msg.tx_count = transmit_count
             msg.message = subscription_name[0]*size
 
@@ -29,7 +30,7 @@ class TestbedRobot(Node):
             s = ""
             for recipient_robot_name in recipients:
                 s += "%s,%s,%s,%d,%f\n"%(
-                           robot_name,
+                           self.robot_name,
                            recipient_robot_name,
                            subscription_name,
                            transmit_count,
@@ -41,26 +42,27 @@ class TestbedRobot(Node):
             # log the publish metadata
             flock(f, LOCK_EX) # exclusive lock
             f.write(s)
+            f.flush()
             flock(f, LOCK_UN) # unlock
         return fn
 
     def _make_subscriber_callback_function(self, subscription_name, f):
-        def fn(self, msg):
-#            self.get_logger().info("_make_subscribe: '%s'"%msg.data[:60])
-#            self.get_logger().info("subscription callback")
+        def fn(msg):
        
             # rx log: from, to, subscription, tx count, rx count, msg size, ts
-            response = "%s,%s,%s,%d,%d,%d,%f"%(
+            response = "%s,%s,%s,%d,%d,%d,%f\n"%(
                            msg.publisher_name,
                            self.robot_name,
-                           subscriptioin_name,
+                           subscription_name,
                            msg.tx_count,
                            self.counters[subscription_name],
-                           len(msg.message))
+                           len(msg.message),
+                           perf_counter())
 
             # log the response metadata
             flock(f, LOCK_EX) # exclusive lock
             f.write(response)
+            f.flush()
             flock(f, LOCK_UN) # unlock
         return fn
 
@@ -91,9 +93,6 @@ class TestbedRobot(Node):
                              TestbedMessage, subscription,
                              qos_profile=publisher.qos_profile)
 
-#            # the counter
-#            counter = self.counters[subscription]
-
             # recipients
             recipients = all_recipients[subscription]
 
@@ -106,9 +105,8 @@ class TestbedRobot(Node):
             self.publisher_timers.append(timer)
 
         # start subscribers
-        subscriptions = list()
+        self.subscription_managers = list()
         for subscriber in subscribers:
-            print("subscriber for %s"%subscriber.subscription)
 
             # only subscribe to subscriptions assigned to this role
             if subscriber.role != role:
@@ -123,7 +121,7 @@ class TestbedRobot(Node):
                                   subscriber.subscription,
                                   _subscriber_callback_function,
                                   qos_profile=subscriber.qos_profile)
-            subscriptions.append(subscription)
+            self.subscription_managers.append(subscription)
 
 def main():
     parser = ArgumentParser(description="Generic testbed robot.",
@@ -134,12 +132,11 @@ def main():
     parser.add_argument("setup_file", type=str, help="The scenario setup file.")
     parser.add_argument("out_file", type=str, help="The output file.")
     args = parser.parse_args()
-    print("Starting testbed_robot %s"%args.robot_name)
+    print("Starting testbed_robot %s role %s"%(args.robot_name, args.role)
     stdout.flush()
 
     # open out_file w+
-    with open(args.out_file, "w+") as f:
-
+    with open(args.out_file, "a") as f:
         rclpy.init()
         robot_node = TestbedRobot(args.robot_name, args.role,
                                   args.setup_file, f)
