@@ -132,7 +132,7 @@ def main():
     parser.add_argument("setup_file", type=str, help="The scenario setup file.")
     parser.add_argument("out_file", type=str, help="The output file.")
     args = parser.parse_args()
-    print("Starting testbed_robot %s role %s"%(args.robot_name, args.role)
+    print("Starting testbed_robot %s role %s"%(args.robot_name, args.role))
     stdout.flush()
 
     # open out_file w+
