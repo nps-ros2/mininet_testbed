@@ -27,16 +27,16 @@ def start_runner(setup_file, out_file):
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
     info("*** Creating nodes\n")
-    stations = list()
-    for i, robot in enumerate(robots):
-        station_name = "sta%d"%i # sta0
+    stations = dict()
+    for robot in robots:
+        station_name = robot.robot_name
         position = robot.position_string()
         station_range = 100
         info(" station %s position %s range %d\n"%(
                                   station_name, position, station_range))
         station = net.addStation(station_name, position=position,
                                  range=station_range)
-        stations.append(station)
+        stations[robot] = station
 
     net.setPropagationModel(model="logDistance", exp=4)
 
@@ -45,26 +45,27 @@ def start_runner(setup_file, out_file):
 
     info("*** Creating links\n")
 
-    for i in range(len(robots)):
-        station = stations[i]
-        net.addLink(station, cls=adhoc, intf='sta%d-wlan0'%i, ssid='adhocNet',
-                    mode='g', channel=5, ht_cap='HT40+')
+    for robot in robots:
+        station = stations[robot]
+        net.addLink(station, cls=adhoc, intf='%s-wlan0'%robot.robot_name,
+                    ssid='adhocNet', mode='g', channel=5, ht_cap='HT40+')
 
     info("*** Starting network\n")
     net.build()
 
     info("\n*** Starting ROS2 nodes...\n")
-    for i, robot in enumerate(robots):
-        station = stations[i]
-        robot_name = "r%d"%i
+    for robot in robots:
+        station = stations[robot]
+        robot_name = robot.robot_name
         role = robot.role
         cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s &"%(
                                 robot_name, role, setup_file, out_file)
         info("*** Starting '%s'\n"%cmd)
         station.cmd(cmd)
+#        info("*** Not Starting '%s'\n"%cmd)
 
-    # Wireshark
-    stations[0].cmd("wireshark &")
+    # start Wireshark on first station (first robot)
+    stations[robots[0]].cmd("wireshark &")
 
     info("*** Running CLI\n")
     CLI_wifi(net)

@@ -7,11 +7,11 @@ from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
 
 # modes: start, publishers, subscribers, robots
 _START = []
-_PUBLISH = ["role", "subscription", "frequency", "size",
-            "history", "depth", "reliability", "durability"]
-_SUBSCRIBE = ["role", "subscription",
-              "history", "depth", "reliability", "durability"]
-_ROBOT = ["role", "x", "y", "z", "moves"]
+_PUBLISH = ["Role", "Subscription", "Frequency", "Size",
+            "History", "Depth", "Reliability", "Durability"]
+_SUBSCRIBE = ["Role", "Subscription",
+              "History", "Depth", "Reliability", "Durability"]
+_ROBOT = ["Name", "Role", "X", "Y", "Z", "Moves"]
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def _qos_profile(history, depth, reliability, durability):
@@ -48,6 +48,12 @@ def _qos_profile(history, depth, reliability, durability):
 
     return profile
 
+def _qos_profile_string(profile):
+    return "QoS: %s, %s, %s, %s"%(profile.history,
+                                  profile.depth,
+                                  profile.reliability,
+                                  profile.durability)
+
 class PublishRecord():
     def __init__(self, row):
         self.role = row[0]
@@ -61,6 +67,11 @@ class PublishRecord():
         durability = row[7]          # transient_local|volatile
         self.qos_profile = _qos_profile(history, depth, reliability, durability)
 
+    def __str__(self):
+        return "Publisher: %s, %s, %d, %d, %s"%(
+               self.role, self.subscription, self.frequency, self.size,
+               _qos_profile_string(self.qos_profile))
+
 class SubscribeRecord():
     def __init__(self, row):
         self.role = row[0]
@@ -71,32 +82,41 @@ class SubscribeRecord():
         durability = row[5]          # transient_local|volatile
         self.qos_profile = _qos_profile(history, depth, reliability, durability)
 
+    def __str__(self):
+        return "Subscriber: %s, %s, %s"%(
+               self.role, self.subscription,
+               _qos_profile_string(self.qos_profile))
+
 class RobotRecord():
     def __init__(self, row):
-        self.role = row[0]
-        self.x = float(row[1])
-        self.y = float(row[2])
-        self.z = float(row[3])
-        if row[4] == "true":
-            moves = True
-        elif row[4] == "false":
-            moves = False
+        self.robot_name = row[0]
+        self.role = row[1]
+        self.x = float(row[2])
+        self.y = float(row[3])
+        self.z = float(row[4])
+        if row[5] == "true":
+            self.moves = True
+        elif row[5] == "false":
+            self.moves = False
         else:
             raise RuntimeError("Invalid field.  Aborting.")
     def position_string():
         return "%f,%f,%f"%(x,y,z)
+
+    def __str__(self):
+        return "Robot: %s, %s, %f, %f, %f, %r"%(self.robot_name, self.role,
+               self.x, self.y, self.z, self.moves)
 
 # get lists of subscriber robot names by key=subscription, value=list(names)
 def _recipients(subscribers, robots):
 
     # get subscribers: key=subscription, value=list(robot names)
     all_recipients = defaultdict(list)
-    for i, robot in enumerate(robots):
-        role = robot.role
+    for robot in robots:
         for subscriber in subscribers:
-             if subscriber.role == role:
-                 robot_name = "r%d"%i
-                 all_recipients[subscriber.subscription].append(robot_name)
+            if subscriber.role == robot.role:
+                all_recipients[subscriber.subscription].append(
+                                                       robot.robot_name)
     return all_recipients
 
 # throws
@@ -116,24 +136,24 @@ def read_setup(filename):
             if not row or not row[0]:
                 continue
 
-            # lowercase the row and remove spaces
-            row=[x.lower().strip() for x in row]
+            # remove spaces
+            row=[x.strip() for x in row]
             print(row)
 
             # mode publish
-            if row[0]=="publishers":
+            if row[0]=="Publishers":
                 mode = "publish"
                 valid_header = _PUBLISH
                 continue
 
             # mode subscribe
-            if row[0]=="subscribers":
+            if row[0]=="Subscribers":
                 mode = "subscribe"
                 valid_header = _SUBSCRIBE
                 continue
 
             # mode robot
-            if row[0]=="robots":
+            if row[0]=="Robots":
                 mode = "robot"
                 valid_header = _ROBOT
                 continue
@@ -167,7 +187,16 @@ if __name__ == '__main__':
     setup_file = "/home/bruce/gits/mininet_testbed/scenarios/example1.csv"
     publishers, subscribers, robots, recipients = read_setup(args.setup_file)
     print("publishers: %d"%len(publishers))
+    for publisher in publishers:
+        print(publisher)
     print("subscribers: %d"%len(subscribers))
+    for subscriber in subscribers:
+        print(subscriber)
+        print("recipients for subscription %s: "%subscriber.subscription,
+                                       recipients[subscriber.subscription])
     print("robots: %d"%len(robots))
+    for robot in robots:
+        print(robot)
+        
     print("Done.")
 

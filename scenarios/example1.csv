@@ -7,10 +7,10 @@ Role, Subscription, History, Depth, Reliability, Durability
 red_team, odometry, keep_last, 0, reliable, volatile
 
 Robots
-Role,X,Y,Z,Moves
-GS,0,0,0,false
-red_team,1,0,0,false
-red_team,0,1,0,false
-red_team,-1,0,0,false
-red_team,0,-1,0,false
+Name,Role,X,Y,Z,Moves
+R1,GS,0,0,0,false
+R2,red_team,1,0,0,false
+R3,red_team,0,1,0,false
+R4,red_team,-1,0,0,false
+R5,red_team,0,-1,0,false
 

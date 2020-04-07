@@ -9,21 +9,22 @@ from collections import defaultdict
 
 # modes: start, publishers, subscribers, robots
 _START = []
-_PUBLISH = ["role", "subscription", "frequency", "size",
-            "history", "depth", "reliability", "durability"]
-_SUBSCRIBE = ["role", "subscription",
-              "history", "depth", "reliability", "durability"]
-_ROBOT = ["role", "x", "y", "z", "moves"]
+_PUBLISH = ["Role", "Subscription", "Frequency", "Size",
+            "History", "Depth", "Reliability", "Durability"]
+_SUBSCRIBE = ["Role", "Subscription",
+              "History", "Depth", "Reliability", "Durability"]
+_ROBOT = ["Name", "Role", "X", "Y", "Z", "Moves"]
 
 class RobotRecord():
     def __init__(self, row):
-        self.role = row[0]
-        self.x = float(row[1])
-        self.y = float(row[2])
-        self.z = float(row[3])
-        if row[4] == "true":
+        self.robot_name = row[0]
+        self.role = row[1]
+        self.x = float(row[2])
+        self.y = float(row[3])
+        self.z = float(row[4])
+        if row[5] == "true":
             moves = True
-        elif row[4] == "false":
+        elif row[5] == "false":
             moves = False
         else:
             raise RuntimeError("Invalid field.  Aborting.")
@@ -46,23 +47,23 @@ def read_robots(filename):
             if not row or not row[0]:
                 continue
 
-            # lowercase the row and remove spaces
-            row=[x.lower().strip() for x in row]
+            # remove spaces
+            row=[x.strip() for x in row]
 
             # mode publish
-            if row[0]=="publishers":
+            if row[0]=="Publishers":
                 mode = "publish"
                 valid_header = _PUBLISH
                 continue
 
             # mode subscribe
-            if row[0]=="subscribers":
+            if row[0]=="Subscribers":
                 mode = "subscribe"
                 valid_header = _SUBSCRIBE
                 continue
 
             # mode robot
-            if row[0]=="robots":
+            if row[0]=="Robots":
                 mode = "robot"
                 valid_header = _ROBOT
                 continue

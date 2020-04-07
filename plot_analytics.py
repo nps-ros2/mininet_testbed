@@ -42,7 +42,7 @@ def plot_latency(args, dropped_latencies, total_latencies, plots_x, plots_y):
 
 def plot_throughput(args, plots_x, plots_y):
     plt.clf()
-    plt.title("Throughput graph for %s"%args.dataset_name)
+    plt.title("Byte throughput graph for %s"%args.dataset_name)
     plt.ylabel("Bytes per second")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
@@ -56,7 +56,7 @@ def plot_throughput(args, plots_x, plots_y):
 
 def plot_loss(args, plots_x, plots_y):
     plt.clf()
-    plt.title("Loss graph for %s"%args.dataset_name)
+    plt.title("Packet loss graph for %s"%args.dataset_name)
     plt.ylabel("%Packets lost")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
@@ -81,7 +81,7 @@ if __name__=="__main__":
                         default = 20)
     parser.add_argument("-b","--bar_period", type=int,
                 help="The time, in seconds, for each histogram bar.",
-                        default = 25)
+                        default = 5)
     parser.add_argument("-w","--write_file", type=str,
                     help="Write to <filename>_<plot_type>.png.",
                         default = "")
