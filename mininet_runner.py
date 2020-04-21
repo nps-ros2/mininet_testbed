@@ -3,6 +3,7 @@
 import sys
 from argparse import ArgumentParser
 from os.path import join, expanduser
+from time import sleep
 
 from mininet.log import setLogLevel, info
 from mn_wifi.link import wmediumd, adhoc
@@ -58,8 +59,10 @@ def start_runner(setup_file, out_file):
         station = stations[robot]
         robot_name = robot.robot_name
         role = robot.role
-        cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s &"%(
-                                robot_name, role, setup_file, out_file)
+        logfile = "_log_%s"%robot_name
+        cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s " \
+              "> %s 2>&1 &"%(robot_name, role, setup_file, out_file, logfile)
+        sleep(0.0031)
         info("*** Starting '%s'\n"%cmd)
         station.cmd(cmd)
 #        info("*** Not Starting '%s'\n"%cmd)
