@@ -14,16 +14,15 @@ class TestbedRobot(Node):
 
     def _make_publisher_timer_callback_function(self, subscription_name, size,
                                                 recipients, f):
+        mutable_tx_index = [0] # hack to get a mutable integer inside fn
         def fn():
-            self.counters[subscription_name] += 1
-            transmit_count = self.counters[subscription_name]
-
-            print("%s publish %s"%(self.robot_name, subscription_name))
+            mutable_tx_index[0] = mutable_tx_index[0] + 1
+            transmit_index = mutable_tx_index[0]
 
             # compose message
             msg = TestbedMessage()
             msg.publisher_name = self.robot_name
-            msg.tx_count = transmit_count
+            msg.tx_count = transmit_index
             msg.message = subscription_name[0]*size
 
             # compose network metadata log
@@ -33,7 +32,7 @@ class TestbedRobot(Node):
                            self.robot_name,
                            recipient_robot_name,
                            subscription_name,
-                           transmit_count,
+                           transmit_index,
                            perf_counter())
 
             # publish the message
@@ -47,15 +46,18 @@ class TestbedRobot(Node):
         return fn
 
     def _make_subscriber_callback_function(self, subscription_name, f):
+        mutable_rx_count = [0] # hack to get a mutable integer inside fn
         def fn(msg):
-       
+
+            # increment rx count
+            mutable_rx_count[0] = mutable_rx_count[0] + 1
             # rx log: from, to, subscription, tx count, rx count, msg size, ts
             response = "%s,%s,%s,%d,%d,%d,%f\n"%(
                            msg.publisher_name,
                            self.robot_name,
                            subscription_name,
                            msg.tx_count,
-                           self.counters[subscription_name],
+                           mutable_rx_count[0],
                            len(msg.message),
                            perf_counter())
 
@@ -77,7 +79,6 @@ class TestbedRobot(Node):
                                                                setup_file)
 
         # start publishers for this role
-        self.counters = defaultdict(int)
         self.publisher_managers = dict()
         self.publisher_timers = list()
         for publisher in publishers:
