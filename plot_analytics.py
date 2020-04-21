@@ -58,7 +58,7 @@ def read_datapoints(filename, bar_period):
             # resolved
             datapoints.append((*key[:3], value[0], bar_time, *value[1:], 0))
         else:
-            datapoints.append((*key[:3], value[0], 0, 0, 0, 100))
+            datapoints.append((*key[:3], value[0], bar_time, 0, 0, 100))
 
     return datapoints
 
