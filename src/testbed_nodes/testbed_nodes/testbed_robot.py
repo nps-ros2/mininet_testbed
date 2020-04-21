@@ -3,7 +3,8 @@ from sys import stdout
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import join, expanduser
 from collections import defaultdict
-from time import perf_counter
+from time import perf_counter, sleep
+import random
 from fcntl import flock, LOCK_EX, LOCK_UN
 import rclpy
 from rclpy.node import Node
@@ -14,15 +15,14 @@ class TestbedRobot(Node):
 
     def _make_publisher_timer_callback_function(self, subscription_name, size,
                                                 recipients, f):
-        mutable_tx_index = [0] # hack to get a mutable integer inside fn
         def fn():
-            mutable_tx_index[0] = mutable_tx_index[0] + 1
-            transmit_index = mutable_tx_index[0]
+            self.publish_counters[subscription_name] += 1
+            transmit_count = self.publish_counters[subscription_name]
 
             # compose message
             msg = TestbedMessage()
             msg.publisher_name = self.robot_name
-            msg.tx_count = transmit_index
+            msg.tx_count = transmit_count
             msg.message = subscription_name[0]*size
 
             # compose network metadata log
@@ -32,7 +32,7 @@ class TestbedRobot(Node):
                            self.robot_name,
                            recipient_robot_name,
                            subscription_name,
-                           transmit_index,
+                           transmit_count,
                            perf_counter())
 
             # publish the message
@@ -46,18 +46,17 @@ class TestbedRobot(Node):
         return fn
 
     def _make_subscriber_callback_function(self, subscription_name, f):
-        mutable_rx_count = [0] # hack to get a mutable integer inside fn
         def fn(msg):
+            self.subscribe_counters[subscription_name] += 1
+            receive_count = self.subscribe_counters[subscription_name]
 
-            # increment rx count
-            mutable_rx_count[0] = mutable_rx_count[0] + 1
             # rx log: from, to, subscription, tx count, rx count, msg size, ts
             response = "%s,%s,%s,%d,%d,%d,%f\n"%(
                            msg.publisher_name,
                            self.robot_name,
                            subscription_name,
                            msg.tx_count,
-                           mutable_rx_count[0],
+                           self.subscribe_counters[subscription_name],
                            len(msg.message),
                            perf_counter())
 
@@ -74,11 +73,17 @@ class TestbedRobot(Node):
         self.role = role
         self.f = f
 
+        # stagger start time randomly but deterministically
+        random.seed(robot_name)
+        random.random()
+
         # get setup parameters
         publishers, subscribers, robots, all_recipients = read_setup(
                                                                setup_file)
 
         # start publishers for this role
+        self.publish_counters = defaultdict(int)
+        self.subscribe_counters = defaultdict(int)
         self.publisher_managers = dict()
         self.publisher_timers = list()
         for publisher in publishers:
