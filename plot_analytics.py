@@ -175,7 +175,9 @@ def plot_latency_points(plots_x, plots_y, args,
         plural = ""
     else:
         plural = "s"
-    plt.title("Latency point graph for %s\n(%d of %d messages failed, %d outlier%s dropped)"%(args.dataset_name, dropped, total, outliers, plural))
+    plt.title("Latency point graph for %s\n(%d of %d messages failed, %d "
+              "outlier%s dropped)"%(
+              args.dataset_name, dropped, total, outliers, plural))
     plt.ylabel("Latency in milliseconds")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
@@ -195,12 +197,11 @@ def plot_latency_trend(plots_x, plots_y, args, total, dropped, outliers):
         plural = "s"
     plt.title("Latency graph for %s\n(%d of %d messages failed, %d "
               "outlier%s dropped)"%(
-             args.dataset_name, dropped, total, outliers, plural))
+              args.dataset_name, dropped, total, outliers, plural))
     plt.ylabel("Latency in milliseconds")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
-        plt.plot(plots_x[key], plots_y[key], '-', markersize=2,
-                 label=key)
+        plt.plot(plots_x[key], plots_y[key], '-', markersize=2, label=key)
     plt.legend()
     if args.write_file:
         plt.savefig("%s_latency.png"%args.write_file)
@@ -213,8 +214,7 @@ def plot_throughput_trend(plots_x, plots_y, args):
     plt.ylabel("Bytes per second")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
-        plt.plot(plots_x[key], plots_y[key], '-', markersize=2,
-                 label=key)
+        plt.plot(plots_x[key], plots_y[key], '-', markersize=2, label=key)
     plt.legend()
     if args.write_file:
         plt.savefig("%s_throughput.png"%args.write_file)
@@ -227,15 +227,12 @@ def plot_loss_trend(plots_x, plots_y, args):
     plt.ylabel("%Packets lost")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
-        plt.plot(plots_x[key], plots_y[key], '-', markersize=2,
-                 label=key)
+        plt.plot(plots_x[key], plots_y[key], '-', markersize=2, label=key)
     plt.legend()
     if args.write_file:
         plt.savefig("%s_loss.png"%args.write_file)
     else:
         plt.show()
-
-
 
 if __name__=="__main__":
 
