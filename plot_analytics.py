@@ -6,8 +6,170 @@ from statistics import mean
 import csv
 import matplotlib.pyplot as plt
 
+"""
+get datapoints: from, to, subscription, time, bar_time, size, latency, %loss
+"""
+def read_datapoints(filename, bar_period):
+    with open(args.input_file) as f:
+        row=csv.reader(f)
+        max_y=args.max_ms_latency
+        points = dict()
+        t0=None
 
-def plot_latency_points(args, dropped, total, outliers, plots_x, plots_y):
+        # reading points is a two-step process: 1) find tx and 2) resolve
+        # in rx.  Unresolved rx will have latency and size values of 0.
+        for c in row:
+            try:
+                # key = from, to, subscription, tx_count
+                # value = either: (tx_time) or (tx_time, size, latency)
+                key = c[0],c[1],c[2], int(c[3])
+
+                if len(c) == 5:
+                    # from, to, subscription, tx_count, timestamp
+                    if not t0:
+                        t0 = float(c[4]) # start time in seconds
+
+                    tx_time = float(c[4]) - t0
+                    points[key] = (tx_time,)
+
+                elif len(c) == 7:
+                    # from, to, subscription, tx_count, rx_count, size,timestamp
+                    tx_time = points[key][0]
+                    rx_time = float(c[6]) - t0
+                    latency = (rx_time - tx_time) * 1000 # ms
+                    size = int(c[5])
+                    points[key] = (tx_time, size, latency)
+                else:
+                    raise RuntimeError("unexpected length %d"%len(c))
+
+            except Exception as e:
+                print("disregarding row", c)
+                print(repr(e))
+
+    # convert points into big list of tuple datapoints
+    datapoints = list()
+    for key, value in points.items():
+
+        # bar time
+        bar_time = (value[0] // bar_period) * bar_period
+        
+        # from, to, subscription, time, bar_time, size, latency, %loss
+        if len(value) == 3:
+            # resolved
+            datapoints.append((*key[:3], value[0], bar_time, *value[1:], 0))
+        else:
+            datapoints.append((*key[:3], value[0], 0, 0, 0, 100))
+
+    return datapoints
+
+def latency_points(datapoints, max_ms_latency):
+    # datapoints are:
+    # from, to, subscription, time, bar_time, size, latency, %loss
+    count_total = 0
+    count_dropped = 0
+    count_outliers = 0
+    time_points_x = defaultdict(list)
+    latency_points_y = defaultdict(list)
+
+    for point in datapoints:
+        count_total += 1
+        latency = point[6]
+        size = point[5]
+        time = point[3]
+
+        if latency == 0:
+            count_dropped += 1
+        elif latency > max_ms_latency:
+            count_outliers += 1
+        else:
+            time_latency_key = "%s, %s, %s, %d bytes"%(*point[:3], size)
+            time_points_x[time_latency_key].append(time)
+            latency_points_y[time_latency_key].append(latency)
+
+    return time_points_x, latency_points_y, \
+           count_total, count_dropped, count_outliers
+
+def latency_histogram(datapoints, max_ms_latency):
+    # datapoints are:
+    # from, to, subscription, time, bar_time, size, latency, %loss
+    count_total = 0
+    count_dropped = 0
+    count_outliers = 0
+    bar_latencies = defaultdict(list)
+
+    # get bar latencies as dict of list of latencies
+    for point in datapoints:
+        count_total += 1
+        if point[6] == 0:
+            count_dropped += 1
+        elif point[6] > max_ms_latency:
+            count_outliers += 1
+        else:
+            bar_time = point[4]
+            latency = point[6]
+            key = ("%s, %s, %s"%(point[:3]), bar_time)
+            bar_latencies[key].append(latency)
+
+
+    # get plottable latencies
+    latencies_x = defaultdict(list)
+    latencies_y = defaultdict(list)
+
+    for key, value in bar_latencies.items():
+        key_string, bar_time = key
+        latencies_x[key_string].append(bar_time)
+        latencies_y[key_string].append(mean(value))
+
+    return latencies_x, latencies_y, count_total, count_dropped, count_outliers
+
+def throughput_histogram(datapoints):
+    # datapoints are:
+    # from, to, subscription, time, bar_time, size, latency, %loss
+    bar_throughputs = defaultdict(list)
+
+    # get bar latencies as dict of list of size
+    for point in datapoints:
+            bar_time = point[4]
+            size = point[5]
+            key = ("%s, %s, %s"%(point[:3]), bar_time)
+            bar_throughputs[key].append(size)
+
+    # get plottable latencies
+    throughputs_x = defaultdict(list)
+    throughputs_y = defaultdict(list)
+
+    for key, value in bar_throughputs.items():
+        key_string, bar_time = key
+        throughputs_x[key_string].append(bar_time)
+        throughputs_y[key_string].append(sum(value))
+
+    return throughputs_x, throughputs_y
+
+def loss_histogram(datapoints):
+    # datapoints are:
+    # from, to, subscription, time, bar_time, size, latency, %loss
+    bar_losses = defaultdict(list)
+
+    # get bar losses as dict of list of %loss values
+    for point in datapoints:
+            bar_time = point[4]
+            loss = point[7]
+            key = ("%s, %s, %s"%(point[:3]), bar_time)
+            bar_losses[key].append(loss)
+
+    # get plottable latencies
+    losses_x = defaultdict(list)
+    losses_y = defaultdict(list)
+
+    for key, value in bar_losses.items():
+        key_string, bar_time = key
+        losses_x[key_string].append(bar_time)
+        losses_y[key_string].append(mean(value))
+
+    return losses_x, losses_y
+
+def plot_latency_points(plots_x, plots_y, args,
+                        total, dropped, outliers):
     plt.clf()
     if outliers == 1:
         plural = ""
@@ -25,10 +187,15 @@ def plot_latency_points(args, dropped, total, outliers, plots_x, plots_y):
     else:
         plt.show()
 
-def plot_latency(args, dropped_latencies, total_latencies, plots_x, plots_y):
+def plot_latency_trend(plots_x, plots_y, args, total, dropped, outliers):
     plt.clf()
-    plt.title("Latency graph for %s\n(%d of %d messages failed)"%(
-                  args.dataset_name, dropped_latencies, total_latencies))
+    if outliers == 1:
+        plural = ""
+    else:
+        plural = "s"
+    plt.title("Latency graph for %s\n(%d of %d messages failed, %d "
+              "outlier%s dropped)"%(
+             args.dataset_name, dropped, total, outliers, plural))
     plt.ylabel("Latency in milliseconds")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
@@ -40,7 +207,7 @@ def plot_latency(args, dropped_latencies, total_latencies, plots_x, plots_y):
     else:
         plt.show()
 
-def plot_throughput(args, plots_x, plots_y):
+def plot_throughput_trend(plots_x, plots_y, args):
     plt.clf()
     plt.title("Byte throughput graph for %s"%args.dataset_name)
     plt.ylabel("Bytes per second")
@@ -54,7 +221,7 @@ def plot_throughput(args, plots_x, plots_y):
     else:
         plt.show()
 
-def plot_loss(args, plots_x, plots_y):
+def plot_loss_trend(plots_x, plots_y, args):
     plt.clf()
     plt.title("Packet loss graph for %s"%args.dataset_name)
     plt.ylabel("%Packets lost")
@@ -67,6 +234,8 @@ def plot_loss(args, plots_x, plots_y):
         plt.savefig("%s_loss.png"%args.write_file)
     else:
         plt.show()
+
+
 
 if __name__=="__main__":
 
@@ -87,124 +256,26 @@ if __name__=="__main__":
                         default = "")
     args = parser.parse_args()
 
-    plots_x_latency=defaultdict(list)
-    plots_y_latency=defaultdict(list)
-    latency_outliers = 0
+    datapoints = read_datapoints(args.input_file, args.bar_period)
 
-    with open(args.input_file) as f:
-        row=csv.reader(f)
-        max_y=args.max_ms_latency
-        datapoints = dict()
-        t0=None
-        for c in row:
-            # skip lines with less than 5 commas
-            if len(c) < 5:
-                continue
+    # latency points
+    time_points_x, latency_points_y, \
+                      count_total, count_dropped, count_outliers = \
+                      latency_points(datapoints, args.max_ms_latency)
+    plot_latency_points(time_points_x, latency_points_y, args,
+                        count_total, count_dropped, count_outliers)
 
-            # skip Row lines
-            if c[0][:4] == "Row:":
-                continue
+    # latency bar averages
+    latencies_x, latencies_y, count_total, count_dropped, count_outliers = \
+                 latency_histogram(datapoints, args.max_ms_latency)
+    plot_latency_trend(latencies_x, latencies_y, args,
+                       count_total, count_dropped, count_outliers)
 
-            # remove ROS2 log headers
-            header_index = c[0].find(": ")
-            if header_index != -1:
-                c[0] = c[0][header_index+2:]
+    # bytes throughput
+    throughputs_x, throughputs_y = throughput_histogram(datapoints)
+    plot_throughput_trend(throughputs_x, throughputs_y, args)
 
-            key = c[0],c[1],c[2], int(c[3]) # from, to, subscription, tx_count
-            if len(c) == 5:
-                if not t0:
-                    t0 = float(c[4]) # start time in time.perf_counter seconds
-                # tx: from, to, subscription, tx_count, timestamp
-                datapoints[key] = float(c[4]), 0, 0 # time_ns, latency, size
-
-            elif len(c) == 7:
-                # from, to, subscription, tx_count, rx_count, size, timestamp
-                time = (datapoints[key][0] - t0) # seconds from t0
-                latency = (float(c[6]) - datapoints[key][0]) * 1000 # ms
-                datapoints[key] = float(c[6]), latency, c[5] # t_sec, latency, size
-
-                if latency > max_y:
-                    latency_outliers += 1
-                else:
-                    latency_key = "%s, %s, %s, %d bytes"%(c[0],c[1],c[2],
-                                                          float(c[5]))
-                    plots_x_latency[latency_key].append(time)
-                    plots_y_latency[latency_key].append(latency)
-
-            else:
-                print("disregarding row")
-                print(c)
-
-    # statistics by bar period
-    latencies = defaultdict(list)
-    throughputs = defaultdict(list)
-    percent_losses = defaultdict(list)
-
-    dropped_latencies = 0
-    total_latencies = 0
-    bar_period = args.bar_period
-    for key, value in datapoints.items():
-        # key = from, to, subscription, _tx_count
-        # value = time_ns, latency, size
-        t=((value[0]-t0)//bar_period) * bar_period
-        stat_key = key[0],key[1],key[2],t
-
-        # latency
-        latency = float(value[1])
-        if latency:
-            latencies[stat_key].append(latency)
-        else:
-            dropped_latencies += 1
-        total_latencies += 1
-
-        # throughput
-        throughput = int(value[2])
-        throughputs[stat_key].append(throughput)
-
-        # percent_loss
-        if throughput == 0:
-            percent_loss = 100
-        else:
-            percent_loss = 0
-        percent_losses[stat_key].append(percent_loss)
-
-    # latency
-    latencies_x = defaultdict(list)
-    latencies_y = defaultdict(list)
-    for key, value in latencies.items():
-        if not value:
-            # we do not monitor values when messages are lost
-            continue
-        # key = from, to, subscription, int_second
-        # value = int latencies
-        key_string = "%s, %s, %s"%(key[0],key[1],key[2])
-        latencies_x[key_string].append(key[3]) # second
-        latencies_y[key_string].append(mean(value))
-
-    # throughput
-    throughputs_x = defaultdict(list)
-    throughputs_y = defaultdict(list)
-    for key, value in throughputs.items():
-        # key = from, to, subscription, int_second
-        # value = int throughputs
-        key_string = "%s, %s, %s"%(key[0],key[1],key[2])
-        throughputs_x[key_string].append(key[3]) # second
-        throughputs_y[key_string].append(sum(value)/bar_period)
-
-    # percent loss
-    percent_losses_x = defaultdict(list)
-    percent_losses_y = defaultdict(list)
-    for key, value in percent_losses.items():
-        # key = from, to, subscription, int_second
-        # value = int percent_losses
-        key_string = "%s, %s, %s"%(key[0],key[1],key[2])
-        percent_losses_x[key_string].append(key[3]) # second
-        percent_losses_y[key_string].append(mean(value))
-
-    plot_latency_points(args, dropped_latencies, total_latencies,
-                        latency_outliers, plots_x_latency, plots_y_latency)
-    plot_latency(args, dropped_latencies, total_latencies,
-                                    latencies_x, latencies_y)
-    plot_throughput(args, throughputs_x, throughputs_y)
-    plot_loss(args, percent_losses_x, percent_losses_y)
+    # % loss
+    throughputs_x, throughputs_y = loss_histogram(datapoints)
+    plot_loss_trend(throughputs_x, throughputs_y, args)
 
