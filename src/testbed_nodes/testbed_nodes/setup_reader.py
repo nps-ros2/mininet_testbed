@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from os.path import expanduser
 import csv
 from collections import defaultdict
 from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
@@ -177,15 +178,8 @@ def read_setup(filename):
         recipients = _recipients(subscribers, robots)
         return publishers, subscribers, robots, recipients
 
-if __name__ == '__main__':
-    parser = ArgumentParser(description="Check your setup file.",
-                            formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument("setup_file", type=str, help="The scenario setup file.")
-    args = parser.parse_args()
-
-    # show setup
-    setup_file = "/home/bruce/gits/mininet_testbed/scenarios/example1.csv"
-    publishers, subscribers, robots, recipients = read_setup(args.setup_file)
+def show_setup(filename, publishers, subscribers, robots, recipients):
+    print("Scenario file: %s"%filename)
     print("publishers: %d"%len(publishers))
     for publisher in publishers:
         print(publisher)
@@ -197,6 +191,16 @@ if __name__ == '__main__':
     print("robots: %d"%len(robots))
     for robot in robots:
         print(robot)
-        
-    print("Done.")
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser(description="Check your setup file.",
+                            formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("setup_file", type=str, help="The scenario setup file.")
+    args = parser.parse_args()
+
+    # show setup
+    setup_file = expanduser(args.setup_file)
+    publishers, subscribers, robots, recipients = read_setup(setup_file)
+    show_setup(setup_file, publishers, subscribers, robots, recipients)
 

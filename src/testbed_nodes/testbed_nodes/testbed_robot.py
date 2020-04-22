@@ -9,7 +9,7 @@ from fcntl import flock, LOCK_EX, LOCK_UN
 import rclpy
 from rclpy.node import Node
 from testbed_msg.msg import TestbedMessage
-from testbed_nodes.setup_reader import read_setup
+from testbed_nodes.setup_reader import read_setup, show_setup
 
 class TestbedRobot(Node):
 
@@ -78,8 +78,8 @@ class TestbedRobot(Node):
         random.random()
 
         # get setup parameters
-        publishers, subscribers, robots, all_recipients = read_setup(
-                                                               setup_file)
+        publishers, subscribers, robots, all_recipients = read_setup(setup_file)
+        show_setup(setup_file, publishers, subscribers, robots, all_recipients)
 
         # start publishers for this role
         self.publish_counters = defaultdict(int)
