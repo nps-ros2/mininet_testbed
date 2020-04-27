@@ -1,0 +1,90 @@
+Publishers
+Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+R1_role, R1_to_R2, 2, 40, keep_last, 0, best_effort, volatile
+R2_role, R2_to_R3, 2, 40, keep_last, 0, best_effort, volatile
+R3_role, R3_to_R4, 2, 40, keep_last, 0, best_effort, volatile
+R4_role, R4_to_R5, 2, 40, keep_last, 0, best_effort, volatile
+R5_role, R5_to_R6, 2, 40, keep_last, 0, best_effort, volatile
+R6_role, R6_to_R7, 2, 40, keep_last, 0, best_effort, volatile
+R7_role, R7_to_R8, 2, 40, keep_last, 0, best_effort, volatile
+R8_role, R8_to_R9, 2, 40, keep_last, 0, best_effort, volatile
+R9_role, R9_to_R10, 2, 40, keep_last, 0, best_effort, volatile
+R10_role, R10_to_R11, 2, 40, keep_last, 0, best_effort, volatile
+
+R11_role, R11_to_R12, 2, 40, keep_last, 0, best_effort, volatile
+R12_role, R12_to_R13, 2, 40, keep_last, 0, best_effort, volatile
+R13_role, R13_to_R14, 2, 40, keep_last, 0, best_effort, volatile
+R14_role, R14_to_R15, 2, 40, keep_last, 0, best_effort, volatile
+R15_role, R15_to_R16, 2, 40, keep_last, 0, best_effort, volatile
+R16_role, R16_to_R17, 2, 40, keep_last, 0, best_effort, volatile
+R17_role, R17_to_R18, 2, 40, keep_last, 0, best_effort, volatile
+R18_role, R18_to_R19, 2, 40, keep_last, 0, best_effort, volatile
+R19_role, R19_to_R20, 2, 40, keep_last, 0, best_effort, volatile
+R20_role, R20_to_R21, 2, 40, keep_last, 0, best_effort, volatile
+
+R21_role, R21_to_R22, 2, 40, keep_last, 0, best_effort, volatile
+R22_role, R22_to_R23, 2, 40, keep_last, 0, best_effort, volatile
+R23_role, R23_to_R24, 2, 40, keep_last, 0, best_effort, volatile
+R24_role, R24_to_R25, 2, 40, keep_last, 0, best_effort, volatile
+R25_role, R25_to_R1, 2, 40, keep_last, 0, best_effort, volatile
+
+Subscribers
+Role, Subscription, History, Depth, Reliability, Durability
+R1_role, R25_to_R1, keep_last, 0, best_effort, volatile
+R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
+R3_role, R2_to_R3, keep_last, 0, best_effort, volatile
+R4_role, R3_to_R4, keep_last, 0, best_effort, volatile
+R5_role, R4_to_R5, keep_last, 0, best_effort, volatile
+R6_role, R5_to_R6, keep_last, 0, best_effort, volatile
+R7_role, R6_to_R7, keep_last, 0, best_effort, volatile
+R8_role, R7_to_R8, keep_last, 0, best_effort, volatile
+R9_role, R8_to_R9, keep_last, 0, best_effort, volatile
+R10_role, R9_to_R10, keep_last, 0, best_effort, volatile
+
+R11_role, R10_to_R11, keep_last, 0, best_effort, volatile
+R12_role, R11_to_R12, keep_last, 0, best_effort, volatile
+R13_role, R12_to_R13, keep_last, 0, best_effort, volatile
+R14_role, R13_to_R14, keep_last, 0, best_effort, volatile
+R15_role, R14_to_R15, keep_last, 0, best_effort, volatile
+R16_role, R15_to_R16, keep_last, 0, best_effort, volatile
+R17_role, R16_to_R17, keep_last, 0, best_effort, volatile
+R18_role, R17_to_R18, keep_last, 0, best_effort, volatile
+R19_role, R18_to_R19, keep_last, 0, best_effort, volatile
+R20_role, R19_to_R20, keep_last, 0, best_effort, volatile
+
+R21_role, R20_to_R21, keep_last, 0, best_effort, volatile
+R22_role, R21_to_R22, keep_last, 0, best_effort, volatile
+R23_role, R22_to_R23, keep_last, 0, best_effort, volatile
+R24_role, R23_to_R24, keep_last, 0, best_effort, volatile
+R25_role, R24_to_R25, keep_last, 0, best_effort, volatile
+
+Robots
+Name, Role, X, Y, Z, Moves
+R01, R1_role,0.1,0,0,false
+R02, R2_role,0.2,0,0,false
+R03, R3_role,0.3,0,0,false
+R04, R4_role,0.4,0,0,false
+R05, R5_role,0.5,0,0,false
+R06, R6_role,0.6,0,0,false
+R07, R7_role,0.7,0,0,false
+R08, R8_role,0.8,0,0,false
+R09, R9_role,0.9,0,0,false
+R10, R10_role,1.0,0,0,false
+
+R11, R11_role,1.1,0,0,false
+R12, R12_role,1.2,0,0,false
+R13, R13_role,1.3,0,0,false
+R14, R14_role,1.4,0,0,false
+R15, R15_role,1.5,0,0,false
+R16, R16_role,1.6,0,0,false
+R17, R17_role,1.7,0,0,false
+R18, R18_role,1.8,0,0,false
+R19, R19_role,1.9,0,0,false
+R20, R20_role,2.0,0,0,false
+
+R21, R21_role,2.1,0,0,false
+R22, R22_role,2.2,0,0,false
+R23, R23_role,2.3,0,0,false
+R24, R24_role,2.4,0,0,false
+R25, R25_role,2.5,0,0,false
+
