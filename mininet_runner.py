@@ -30,12 +30,8 @@ def start_runner(setup_file, out_file):
     stations = dict()
     for robot in robots:
         station_name = robot.robot_name
-        position = robot.position_string()
-        station_range = 100
-        info(" station %s position %s range %d\n"%(
-                                  station_name, position, station_range))
-        station = net.addStation(station_name, position=position,
-                                 range=station_range)
+        info(" station %s params %s"%(station_name, robot.station_params))
+        station = net.addStation(station_name, **robot.station_params)
         stations[robot] = station
 
     net.setPropagationModel(model="logDistance", exp=4)
@@ -43,8 +39,11 @@ def start_runner(setup_file, out_file):
     info("*** Configuring wifi nodes\n")
     net.configureWifiNodes()
 
-    info("*** Creating links\n")
+    info("*** Configuring mobility model\n")
+    net.setMobilityModel(time=0, model='RandomDirection',
+                         max_x=100,max_y=100, seed=20)
 
+    info("*** Creating links\n")
     for robot in robots:
         station = stations[robot]
         net.addLink(station, cls=adhoc, intf='%s-wlan0'%robot.robot_name,

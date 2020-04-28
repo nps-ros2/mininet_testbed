@@ -13,23 +13,35 @@ _PUBLISH = ["Role", "Subscription", "Frequency", "Size",
             "History", "Depth", "Reliability", "Durability"]
 _SUBSCRIBE = ["Role", "Subscription",
               "History", "Depth", "Reliability", "Durability"]
-_ROBOT = ["Name", "Role", "X", "Y", "Z", "Moves"]
+_ROBOT = ["Name", "Role", "param:value"]
+
+# returned dict values are float else string
+def _station_params(param_list):
+    params = dict()
+    for pair in param_list:
+        key,value=pair.split(":")
+        key,value=key.strip(),value.strip()
+        # values are float if possible else string
+        try:
+            params[key]=float(value)
+        except ValueError:
+            params[key]=value.replace(";",",")
+    return params
 
 class RobotRecord():
     def __init__(self, row):
         self.robot_name = row[0]
         self.role = row[1]
-        self.x = float(row[2])
-        self.y = float(row[3])
-        self.z = float(row[4])
-        if row[5] == "true":
-            moves = True
-        elif row[5] == "false":
-            moves = False
-        else:
-            raise RuntimeError("Invalid field.  Aborting.")
-    def position_string(self):
-        return "%f,%f,%f"%(self.x,self.y,self.z)
+        self.station_params = _station_params(row[2:])
+
+    def __str__(self):
+        text = "Robot: %s, %s"%(self.robot_name, self.role)
+        for key, value in sorted(self.station_params.items()):
+            if type(value) == str:
+                # show with semicolons
+                value = value.replace(",",";")
+            text += ",%s:%s"%(key,value)
+        return text
 
 # throws
 def read_robots(filename):

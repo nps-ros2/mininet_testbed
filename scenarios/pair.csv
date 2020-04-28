@@ -1,0 +1,13 @@
+Publishers
+Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+R1_role, R1_to_R2, 2, 8, keep_last, 0, best_effort, volatile
+
+Subscribers
+Role, Subscription, History, Depth, Reliability, Durability
+R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
+
+Robots
+Name, Role, param:value, ...
+R1, R1_role, max_x:100, max_y:10, position:1;1;0, range:100
+R2, R2_role, max_x:10, max_y:100, position:9;9;0, range:100
+

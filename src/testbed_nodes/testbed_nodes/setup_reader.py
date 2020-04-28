@@ -12,7 +12,7 @@ _PUBLISH = ["Role", "Subscription", "Frequency", "Size",
             "History", "Depth", "Reliability", "Durability"]
 _SUBSCRIBE = ["Role", "Subscription",
               "History", "Depth", "Reliability", "Durability"]
-_ROBOT = ["Name", "Role", "X", "Y", "Z", "Moves"]
+_ROBOT = ["Name", "Role", "param:value"]
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def _qos_profile(history, depth, reliability, durability):
@@ -55,6 +55,19 @@ def _qos_profile_string(profile):
                                   profile.reliability,
                                   profile.durability)
 
+# returned dict values are float else string
+def _station_params(param_list):
+    params = dict()
+    for pair in param_list:
+        key,value=pair.split(":")
+        key,value=key.strip(),value.strip()
+        # values are float if possible else string
+        try:
+            params[key]=float(value)
+        except ValueError:
+            params[key]=value.replace(";",",")
+    return params
+
 class PublishRecord():
     def __init__(self, row):
         self.role = row[0]
@@ -92,21 +105,16 @@ class RobotRecord():
     def __init__(self, row):
         self.robot_name = row[0]
         self.role = row[1]
-        self.x = float(row[2])
-        self.y = float(row[3])
-        self.z = float(row[4])
-        if row[5] == "true":
-            self.moves = True
-        elif row[5] == "false":
-            self.moves = False
-        else:
-            raise RuntimeError("Invalid field.  Aborting.")
-    def position_string():
-        return "%f,%f,%f"%(x,y,z)
+        self.station_params = _station_params(row[2:])
 
     def __str__(self):
-        return "Robot: %s, %s, %f, %f, %f, %r"%(self.robot_name, self.role,
-               self.x, self.y, self.z, self.moves)
+        text = "Robot: %s, %s"%(self.robot_name, self.role)
+        for key, value in sorted(self.station_params.items()):
+            if type(value) == str:
+                # show with semicolons
+                value = value.replace(",",";")
+            text += ",%s:%s"%(key,value)
+        return text
 
 # get lists of subscriber robot names by key=subscription, value=list(names)
 def _recipients(subscribers, robots):
