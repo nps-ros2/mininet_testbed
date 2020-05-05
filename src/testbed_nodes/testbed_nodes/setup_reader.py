@@ -3,8 +3,12 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import expanduser
 import csv
 from collections import defaultdict
-from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
-     QoSReliabilityPolicy, QoSProfile
+try:
+    from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
+         QoSReliabilityPolicy, QoSProfile
+except SyntaxError:
+    # Python2 or incompatible ROS2 version
+    pass
 
 # modes: start, publishers, subscribers, robots
 _START = []
@@ -16,44 +20,50 @@ _ROBOT = ["Name", "Role", "param:value"]
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def _qos_profile(history, depth, reliability, durability):
-    # depth
-    profile = QoSProfile(depth = depth)
+    try:
+        # depth
+        profile = QoSProfile(depth = depth)
 
-    # history
-    if history == "keep_all":
-        profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_ALL
-    elif history == "keep_last":
-        profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST
-    else:
-        raise RuntimeError("Invalid history policy: %s"%history)
+        # history
+        if history == "keep_all":
+            profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_ALL
+        elif history == "keep_last":
+            profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST
+        else:
+            raise RuntimeError("Invalid history policy: %s"%history)
 
-    # reliability
-    if reliability == "reliable":
-        profile.reliability = \
+        # reliability
+        if reliability == "reliable":
+            profile.reliability = \
                    QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE
-    elif reliability == "best_effort":
-        profile.reliability = \
+        elif reliability == "best_effort":
+            profile.reliability = \
                    QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
-    else:
-        raise RuntimeError("Invalid reliability policy: %s"%reliability)
+        else:
+            raise RuntimeError("Invalid reliability policy: %s"%reliability)
 
-    # durability
-    if durability == "transient_local":
-        profile.durability = \
+        # durability
+        if durability == "transient_local":
+            profile.durability = \
                    QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
-    elif durability == "volatile":
-        profile.durability = \
+        elif durability == "volatile":
+            profile.durability = \
                    QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE
-    else:
-        raise RuntimeError("Invalid durability policy: %s"%durability)
+        else:
+            raise RuntimeError("Invalid durability policy: %s"%durability)
 
-    return profile
+        return profile
+    except NameError:
+        print("QoS fields were not processed.")
 
 def _qos_profile_string(profile):
-    return "QoS: %s, %s, %s, %s"%(profile.history,
-                                  profile.depth,
-                                  profile.reliability,
-                                  profile.durability)
+    if profile:
+        return "QoS: %s, %s, %s, %s"%(profile.history,
+                                      profile.depth,
+                                      profile.reliability,
+                                      profile.durability)
+    else:
+        return "QoS profile was not processed, likely Python2 or newer ROS2"
 
 # returned dict values are float else string
 def _station_params(param_list):
@@ -141,13 +151,13 @@ def read_setup(filename):
         total_count = 0
         for row in reader:
 
-            # blank first column
-            if not row or not row[0]:
-                continue
-
             # remove spaces
             row=[x.strip() for x in row]
             print(row)
+
+            # blank or comment in first column
+            if not row or not row[0] or row[0][0]=="#":
+                continue
 
             # mode publish
             if row[0]=="Publishers":
