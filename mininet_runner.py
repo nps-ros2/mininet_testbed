@@ -10,7 +10,7 @@ from mn_wifi.cli import CLI_wifi
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.wmediumdConnector import interference
 
-from read_robots import read_robots
+from setup_reader import read_setup, show_setup
 
 
 def start_runner(setup_file, out_file):
@@ -19,44 +19,67 @@ def start_runner(setup_file, out_file):
     with open(out_file, "w") as f:
         f.flush()
 
+    # get setup
+    setup = read_setup(setup_file)
+    show_setup(setup_file, setup)
+    robots = setup["robots"]
+    stations = setup["stations"]
+    links = setup["links"]
+    propagation_model = setup["propagation_model"]
+    mobility_model = setup["mobility_model"]
+
     # get total count of Wifi devices
-    robots = read_robots(setup_file)
     print("Robot count: %d"%len(robots))
 
     "Create a network."
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
     info("*** Creating nodes\n")
-    stations = dict()
+    station_objects = dict()
     for robot in robots:
-        station_name = robot.robot_name
-        info(" station %s params %s"%(station_name, robot.station_params))
-        station = net.addStation(station_name, **robot.station_params)
-        stations[robot] = station
+        robot_name = robot["robot_name"]
+        print("addStation %s: %s"(robot_name, **stations[robot_name]))
+        station_objects[robot_name] = net.addStation(robot_name,
+                                                    **stations[robot_name])
 
-    net.setPropagationModel(model="logDistance", exp=4)
+    net.setPropagationModel(**propagation_model)
 
     info("*** Configuring wifi nodes\n")
     net.configureWifiNodes()
 
-    info("*** Configuring mobility model\n")
-    net.setMobilityModel(time=0, model='RandomDirection',
-                         max_x=100,max_y=100, seed=20)
-
     info("*** Creating links\n")
     for robot in robots:
-        station = stations[robot]
-        net.addLink(station, cls=adhoc, intf='%s-wlan0'%robot.robot_name,
-                    ssid='adhocNet', mode='g', channel=5, ht_cap='HT40+')
+        robot_name = robot["robot_name"]
+        station = station_objects[robot_name]
+        params = links[robot_name]
+        params["cls"] = adhoc
+        params["intf"] = '%s-wlan0'%robot_name
+        print("station: ", station)
+        print("params: ", params)
+
+        print("addLink%s: %s"(station, params))
+        net.addLink(station, **params)
+
+#    net.plotGraph(max_x=100,max_y=100)
+    net.plotGraph()
+
+    info("*** Configuring mobility model\n")
+#    net.setMobilityModel(time=0, model='RandomDirection',
+#                         max_x=100,max_y=100, seed=20)
+#    net.setMobilityModel(time=0, model='RandomWayPoint', max_x=120, max_y=120,
+#                         min_v=0.3, max_v=0.5, seed=1, ac_method='ssf')
+
+    net.setMobilityModel(**mobility_model)
+
 
     info("*** Starting network\n")
     net.build()
 
     info("\n*** Starting ROS2 nodes...\n")
     for robot in robots:
-        station = stations[robot]
-        robot_name = robot.robot_name
-        role = robot.role
+        robot_name = robot["robot_name"]
+        station = station_objects[robot_name]
+        role = robot["role"]
         logfile = "_log_%s"%robot_name
         cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s " \
               "> %s 2>&1 &"%(robot_name, role, setup_file, out_file, logfile)
@@ -65,7 +88,7 @@ def start_runner(setup_file, out_file):
 #        info("*** Not Starting '%s'\n"%cmd)
 
     # start Wireshark on first station (first robot)
-    stations[robots[0]].cmd("wireshark &")
+    station_objects[robots[0]["robot_name"]].cmd("wireshark &")
 
     info("*** Running CLI\n")
     CLI_wifi(net)

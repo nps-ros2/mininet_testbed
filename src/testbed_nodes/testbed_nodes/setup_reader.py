@@ -3,6 +3,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import expanduser
 import csv
 from collections import defaultdict
+from json import dumps
 try:
     from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
          QoSReliabilityPolicy, QoSProfile
@@ -10,63 +11,77 @@ except SyntaxError:
     # Python2 or incompatible ROS2 version
     pass
 
-# modes: start, publishers, subscribers, robots
-_START = []
-_PUBLISH = ["Role", "Subscription", "Frequency", "Size",
-            "History", "Depth", "Reliability", "Durability"]
-_SUBSCRIBE = ["Role", "Subscription",
-              "History", "Depth", "Reliability", "Durability"]
-_ROBOT = ["Name", "Role", "param:value"]
+MODES = \
+{
+    # start
+    "start":[],
+
+    # Publishers
+    "Publishers":["Role", "Subscription", "Frequency", "Size",
+                  "History", "Depth", "Reliability", "Durability"],
+
+    # Subscribers
+    "Subscribers":["Role", "Subscription",
+                   "History", "Depth", "Reliability", "Durability"],
+
+    # Robots
+    "Robots":["Name", "Role"],
+
+    # Stations
+    "Stations":["Name", "param:value"],
+
+    # Links
+    "Links":["Name", "param:value"],
+
+    # Propagation Model
+    "Propagation Model":["param:value"],
+
+    # Mobility Model
+    "Mobility Model":["param:value"],
+}
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
-def _qos_profile(history, depth, reliability, durability):
-    try:
-        # depth
-        profile = QoSProfile(depth = depth)
+def qos_profile(qos):
+    history = qos["history"]             # keep_last|keep_all
+    depth = qos["depth"]                 # used if using keep_last
+    reliability = qos["reliability"]     # reliable|best_effort
+    durability = qos["durability"]       # transient_local|volatile
 
-        # history
-        if history == "keep_all":
-            profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_ALL
-        elif history == "keep_last":
-            profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST
-        else:
-            raise RuntimeError("Invalid history policy: %s"%history)
+    # depth
+    profile = QoSProfile(depth = depth)
 
-        # reliability
-        if reliability == "reliable":
-            profile.reliability = \
-                   QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE
-        elif reliability == "best_effort":
-            profile.reliability = \
-                   QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
-        else:
-            raise RuntimeError("Invalid reliability policy: %s"%reliability)
-
-        # durability
-        if durability == "transient_local":
-            profile.durability = \
-                   QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
-        elif durability == "volatile":
-            profile.durability = \
-                   QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE
-        else:
-            raise RuntimeError("Invalid durability policy: %s"%durability)
-
-        return profile
-    except NameError:
-        print("QoS fields were not processed.")
-
-def _qos_profile_string(profile):
-    if profile:
-        return "QoS: %s, %s, %s, %s"%(profile.history,
-                                      profile.depth,
-                                      profile.reliability,
-                                      profile.durability)
+    # history
+    if history == "keep_all":
+        profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_ALL
+    elif history == "keep_last":
+        profile.history = QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST
     else:
-        return "QoS profile was not processed, likely Python2 or newer ROS2"
+        raise RuntimeError("Invalid history policy: %s"%history)
+
+    # reliability
+    if reliability == "reliable":
+        profile.reliability = \
+               QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE
+    elif reliability == "best_effort":
+        profile.reliability = \
+               QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT
+    else:
+        raise RuntimeError("Invalid reliability policy: %s"%reliability)
+
+    # durability
+    if durability == "transient_local":
+        profile.durability = \
+               QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL
+    elif durability == "volatile":
+        profile.durability = \
+               QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_VOLATILE
+    else:
+        raise RuntimeError("Invalid durability policy: %s"%durability)
+
+    return profile
 
 # returned dict values are float else string
-def _station_params(param_list):
+def _typed_params(param_list):
     params = dict()
     for pair in param_list:
         key,value=pair.split(":")
@@ -78,53 +93,39 @@ def _station_params(param_list):
             params[key]=value.replace(";",",")
     return params
 
-class PublishRecord():
-    def __init__(self, row):
-        self.role = row[0]
-        self.subscription = row[1]
-        self.frequency = int(row[2])
-        self.size = int(row[3])
+def _named_typed_params(row):
+    name = row[0]
+    return name, _typed_params(row[1:])
 
-        history = row[4]             # keep_last|keep_all
-        depth = int(row[5])          # used if using keep_last
-        reliability = row[6]         # reliable|best_effort
-        durability = row[7]          # transient_local|volatile
-        self.qos_profile = _qos_profile(history, depth, reliability, durability)
+def _publish_record(row):
+    d=dict()
+    d["role"]=row[0]
+    d["subscription"] = row[1]
+    d["frequency"] = row[2]
+    d["size"] = row[3]
 
-    def __str__(self):
-        return "Publisher: %s, %s, %d, %d, %s"%(
-               self.role, self.subscription, self.frequency, self.size,
-               _qos_profile_string(self.qos_profile))
+    d["history"] = row[4]
+    d["depth"] = row[5]
+    d["reliability"] = row[6]
+    d["durability"] = row[7]
+    return d
 
-class SubscribeRecord():
-    def __init__(self, row):
-        self.role = row[0]
-        self.subscription = row[1]
-        history = row[2]             # keep_last|keep_all
-        depth = int(row[3])          # used if using keep_last
-        reliability = row[4]         # reliable|best_effort
-        durability = row[5]          # transient_local|volatile
-        self.qos_profile = _qos_profile(history, depth, reliability, durability)
+def _subscribe_record(row):
+    d=dict()
+    d["role"]=row[0]
+    d["subscription"] = row[1]
 
-    def __str__(self):
-        return "Subscriber: %s, %s, %s"%(
-               self.role, self.subscription,
-               _qos_profile_string(self.qos_profile))
+    d["history"] = row[2]
+    d["depth"] = row[3]
+    d["reliability"] = row[4]
+    d["durability"] = row[5]
+    return d
 
-class RobotRecord():
-    def __init__(self, row):
-        self.robot_name = row[0]
-        self.role = row[1]
-        self.station_params = _station_params(row[2:])
-
-    def __str__(self):
-        text = "Robot: %s, %s"%(self.robot_name, self.role)
-        for key, value in sorted(self.station_params.items()):
-            if type(value) == str:
-                # show with semicolons
-                value = value.replace(",",";")
-            text += ",%s:%s"%(key,value)
-        return text
+def _robot_record(row):
+    d=dict()
+    d["robot_name"] = row[0]
+    d["role"] = row[1]
+    return d
 
 # get lists of subscriber robot names by key=subscription, value=list(names)
 def _recipients(subscribers, robots):
@@ -132,10 +133,12 @@ def _recipients(subscribers, robots):
     # get subscribers: key=subscription, value=list(robot names)
     all_recipients = defaultdict(list)
     for robot in robots:
+        print("robot: ", robot)
         for subscriber in subscribers:
-            if subscriber.role == robot.role:
-                all_recipients[subscriber.subscription].append(
-                                                       robot.robot_name)
+            print("subscriber: ", subscriber)
+            if subscriber["role"] == robot["role"]:
+                all_recipients[subscriber["subscription"]].append(
+                                                       robot["robot_name"])
     return all_recipients
 
 # throws
@@ -143,10 +146,13 @@ def read_setup(filename):
     publishers = list()
     subscribers = list()
     robots = list()
+    stations = defaultdict(dict)
+    links = defaultdict(dict)
+    propagation_model = dict()
+    mobility_model = dict()
 
     with open(filename) as f:
         mode="start"
-        valid_header = _START
         reader = csv.reader(f)
         total_count = 0
         for row in reader:
@@ -159,57 +165,57 @@ def read_setup(filename):
             if not row or not row[0] or row[0][0]=="#":
                 continue
 
-            # mode publish
-            if row[0]=="Publishers":
-                mode = "publish"
-                valid_header = _PUBLISH
+            # model label sets parser mode
+            if row[0] in MODES.keys():
+                mode = row[0]
+                header = MODES[mode]
                 continue
 
-            # mode subscribe
-            if row[0]=="Subscribers":
-                mode = "subscribe"
-                valid_header = _SUBSCRIBE
+            # accept mode-appropriate header
+            if row[:len(header)] == header:
                 continue
 
-            # mode robot
-            if row[0]=="Robots":
-                mode = "robot"
-                valid_header = _ROBOT
-                continue
-
-            # allow valid header
-            if row[:len(valid_header)] == valid_header:
-                continue
-
-            # parse by mode
-            if mode == "publish":
-                publishers.append(PublishRecord(row))
-            elif mode == "subscribe":
-                subscribers.append(SubscribeRecord(row))
-            elif mode == "robot":
-                robots.append(RobotRecord(row))
-            else:
-                print("invalid mode '%s' for row '%s'"%(
+            try:
+                # parse by mode
+                if mode == "Publishers":
+                    publishers.append(_publish_record(row))
+                elif mode == "Subscribers":
+                    subscribers.append(_subscribe_record(row))
+                elif mode == "Robots":
+                    robots.append(_robot_record(row))
+                elif mode == "Stations":
+                    robot_name, typed_params = _named_typed_params(row)
+                    stations[robot_name] = typed_params
+                elif mode == "Links":
+                    robot_name, typed_params = _named_typed_params(row)
+                    links[robot_name] = typed_params
+                elif mode == "Propagation Model":
+                    propagation_model = _typed_params(row)
+                elif mode == "Mobility Model":
+                    mobility_model = _typed_params(row)
+                else:
+                    print("invalid mode '%s' for row '%s'"%(
                                             mode, ",".join(row)))
-                raise RuntimeError("Invalid table.  Aborting")
+                    raise RuntimeError("Invalid table.  Aborting")
+            except Exception:
+                raise RuntimeError("Invalid line: %s.  Aborting"%row)
 
-        recipients = _recipients(subscribers, robots)
-        return publishers, subscribers, robots, recipients
+    setup = dict()
+    setup["publishers"] = publishers
+    setup["subscribers"] = subscribers
+    setup["robots"] = robots
+    setup["stations"] = stations
+    setup["links"] = links
+    setup["propagation_model"] = propagation_model
+    setup["mobility_model"] = mobility_model
+    print("open.subscribers: ", subscribers)
+    print("open.robots: ", robots)
+    setup["recipients"] = _recipients(subscribers, robots)
+    return setup
 
-def show_setup(filename, publishers, subscribers, robots, recipients):
+def show_setup(filename, setup):
     print("Scenario file: %s"%filename)
-    print("publishers: %d"%len(publishers))
-    for publisher in publishers:
-        print(publisher)
-    print("subscribers: %d"%len(subscribers))
-    for subscriber in subscribers:
-        print(subscriber)
-        print("recipients for subscription %s: "%subscriber.subscription,
-                                       recipients[subscriber.subscription])
-    print("robots: %d"%len(robots))
-    for robot in robots:
-        print(robot)
-
+    print(dumps(setup, indent=4, sort_keys=True))
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Check your setup file.",
@@ -219,6 +225,6 @@ if __name__ == '__main__':
 
     # show setup
     setup_file = expanduser(args.setup_file)
-    publishers, subscribers, robots, recipients = read_setup(setup_file)
-    show_setup(setup_file, publishers, subscribers, robots, recipients)
+    setup = read_setup(setup_file)
+    show_setup(setup_file, setup)
 
