@@ -1,0 +1,31 @@
+Publishers
+Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+R1_role, R1_to_R2, 2, 8, keep_last, 0, best_effort, volatile
+
+Subscribers
+Role, Subscription, History, Depth, Reliability, Durability
+R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
+
+Robots
+Name, Role
+R1, R1_role
+R2, R2_role
+
+Stations
+Name, param:value, ...
+R1, range:100, position:20;20;0
+R2, range:100, position:25;25;0
+
+Links
+Name, param:value, ...
+R1, ssid:adhocNet, mode:g, channel:5, ht_cap:HT40+
+R2, ssid:adhocNet, mode:g, channel:5, ht_cap:HT40+
+
+Propagation Model
+param:value, ...
+model:logDistance, exp:4
+
+Mobility Model
+param:value, ...
+time:0, model:RandomWayPoint
+

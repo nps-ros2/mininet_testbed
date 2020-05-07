@@ -9,7 +9,7 @@ from fcntl import flock, LOCK_EX, LOCK_UN
 import rclpy
 from rclpy.node import Node
 from testbed_msg.msg import TestbedMessage
-from testbed_nodes.setup_reader import read_setup, show_setup
+from testbed_nodes.setup_reader import read_setup, qos_profile
 
 class TestbedRobot(Node):
 
@@ -78,8 +78,10 @@ class TestbedRobot(Node):
         random.random()
 
         # get setup parameters
-        publishers, subscribers, robots, all_recipients = read_setup(setup_file)
-        show_setup(setup_file, publishers, subscribers, robots, all_recipients)
+        setup = read_setup(setup_file)
+        publishers = setup["publishers"]
+        subscribers = setup["subscribers"]
+        all_recipients = setup["all_recipients"]
 
         # start publishers for this role
         self.publish_counters = defaultdict(int)
@@ -88,16 +90,16 @@ class TestbedRobot(Node):
         self.publisher_timers = list()
         for publisher in publishers:
             # only publish subscriptions assigned to this role
-            if publisher.role != role:
+            if publisher["role"] != role:
                 continue
 
             # the subscription for this publisher entry
-            subscription = publisher.subscription
+            subscription = publisher["subscription"]
 
             # make and keep static references to publisher managers
             self.publisher_managers[subscription] = self.create_publisher(
                              TestbedMessage, subscription,
-                             qos_profile=publisher.qos_profile)
+                             qos_profile=qos_profile(publisher))
 
             # recipients
             recipients = all_recipients[subscription]
@@ -105,8 +107,8 @@ class TestbedRobot(Node):
             # the callback function that is dynamically created using closure
             publisher_timer_callback_function = \
                             self._make_publisher_timer_callback_function(
-                                  subscription, publisher.size, recipients, f)
-            period = 1/publisher.frequency
+                            subscription, publisher["size"], recipients, f)
+            period = 1/publisher["frequency"]
             timer = self.create_timer(period, publisher_timer_callback_function)
             self.publisher_timers.append(timer)
 
@@ -115,18 +117,18 @@ class TestbedRobot(Node):
         for subscriber in subscribers:
 
             # only subscribe to subscriptions assigned to this role
-            if subscriber.role != role:
+            if subscriber["role"] != role:
                 continue
 
             _subscriber_callback_function = \
                             self._make_subscriber_callback_function(
-                                  subscriber.subscription, f)
+                                  subscriber["subscription"], f)
 
             subscription = self.create_subscription(
                                   TestbedMessage,
-                                  subscriber.subscription,
+                                  subscriber["subscription"],
                                   _subscriber_callback_function,
-                                  qos_profile=subscriber.qos_profile)
+                                  qos_profile=qos_profile(subscriber))
             self.subscription_managers.append(subscription)
 
 def main():
