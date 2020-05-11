@@ -27,6 +27,7 @@ def start_runner(setup_file, out_file):
     links = setup["links"]
     propagation_model = setup["propagation_model"]
     mobility_model = setup["mobility_model"]
+    plot_graph = setup["plot_graph"]
 
     # get total count of Wifi devices
     print("Robot count: %d"%len(robots))
@@ -38,7 +39,7 @@ def start_runner(setup_file, out_file):
     station_objects = dict()
     for robot in robots:
         robot_name = robot["robot_name"]
-        print("addStation %s: %s"(robot_name, **stations[robot_name]))
+        print("addStation %s: %s"%(robot_name, (stations[robot_name])))
         station_objects[robot_name] = net.addStation(robot_name,
                                                     **stations[robot_name])
 
@@ -57,18 +58,12 @@ def start_runner(setup_file, out_file):
         print("station: ", station)
         print("params: ", params)
 
-        print("addLink%s: %s"(station, params))
+        print("addLink%s: %s"%(station, params))
         net.addLink(station, **params)
 
-#    net.plotGraph(max_x=100,max_y=100)
-    net.plotGraph()
+    net.plotGraph(**plot_graph)
 
     info("*** Configuring mobility model\n")
-#    net.setMobilityModel(time=0, model='RandomDirection',
-#                         max_x=100,max_y=100, seed=20)
-#    net.setMobilityModel(time=0, model='RandomWayPoint', max_x=120, max_y=120,
-#                         min_v=0.3, max_v=0.5, seed=1, ac_method='ssf')
-
     net.setMobilityModel(**mobility_model)
 
 

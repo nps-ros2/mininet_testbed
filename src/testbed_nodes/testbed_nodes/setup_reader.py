@@ -28,24 +28,27 @@ MODES = \
     "Robots":["Name", "Role"],
 
     # Stations
-    "Stations":["Name", "param:value"],
+    "Stations":["Name", "param=value"],
 
     # Links
-    "Links":["Name", "param:value"],
+    "Links":["Name", "param=value"],
 
     # Propagation Model
-    "Propagation Model":["param:value"],
+    "Propagation Model":["param=value"],
 
     # Mobility Model
-    "Mobility Model":["param:value"],
+    "Mobility Model":["param=value"],
+
+    # Graph
+    "Plot Graph":["param=value"],
 }
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
-def qos_profile(qos):
-    history = qos["history"]             # keep_last|keep_all
-    depth = qos["depth"]                 # used if using keep_last
-    reliability = qos["reliability"]     # reliable|best_effort
-    durability = qos["durability"]       # transient_local|volatile
+def qos_profile(d):
+    history = d["history"]             # keep_last|keep_all
+    depth = d["depth"]                 # used if using keep_last
+    reliability = d["reliability"]     # reliable|best_effort
+    durability = d["durability"]       # transient_local|volatile
 
     # depth
     profile = QoSProfile(depth = depth)
@@ -84,7 +87,7 @@ def qos_profile(qos):
 def _typed_params(param_list):
     params = dict()
     for pair in param_list:
-        key,value=pair.split(":")
+        key,value=pair.split("=")
         key,value=key.strip(),value.strip()
         # values are float if possible else string
         try:
@@ -101,11 +104,11 @@ def _publish_record(row):
     d=dict()
     d["role"]=row[0]
     d["subscription"] = row[1]
-    d["frequency"] = row[2]
-    d["size"] = row[3]
+    d["frequency"] = int(row[2])
+    d["size"] = int(row[3])
 
     d["history"] = row[4]
-    d["depth"] = row[5]
+    d["depth"] = int(row[5])
     d["reliability"] = row[6]
     d["durability"] = row[7]
     return d
@@ -116,7 +119,7 @@ def _subscribe_record(row):
     d["subscription"] = row[1]
 
     d["history"] = row[2]
-    d["depth"] = row[3]
+    d["depth"] = int(row[3])
     d["reliability"] = row[4]
     d["durability"] = row[5]
     return d
@@ -150,6 +153,7 @@ def read_setup(filename):
     links = defaultdict(dict)
     propagation_model = dict()
     mobility_model = dict()
+    plot_graph = dict()
 
     with open(filename) as f:
         mode="start"
@@ -193,6 +197,10 @@ def read_setup(filename):
                     propagation_model = _typed_params(row)
                 elif mode == "Mobility Model":
                     mobility_model = _typed_params(row)
+                elif mode == "Mobility Model":
+                    mobility_model = _typed_params(row)
+                elif mode == "Plot Graph":
+                    plot_graph = _typed_params(row)
                 else:
                     print("invalid mode '%s' for row '%s'"%(
                                             mode, ",".join(row)))
@@ -208,9 +216,8 @@ def read_setup(filename):
     setup["links"] = links
     setup["propagation_model"] = propagation_model
     setup["mobility_model"] = mobility_model
-    print("open.subscribers: ", subscribers)
-    print("open.robots: ", robots)
-    setup["recipients"] = _recipients(subscribers, robots)
+    setup["plot_graph"] = plot_graph
+    setup["all_recipients"] = _recipients(subscribers, robots)
     return setup
 
 def show_setup(filename, setup):
