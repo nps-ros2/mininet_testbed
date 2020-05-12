@@ -27,7 +27,12 @@ def start_runner(setup_file, out_file):
     links = setup["links"]
     propagation_model = setup["propagation_model"]
     mobility_model = setup["mobility_model"]
+    log_level = setup["log_level"]
     plot_graph = setup["plot_graph"]
+
+    # log
+    if log_level:
+        setLogLevel(log_level)
 
     # get total count of Wifi devices
     print("Robot count: %d"%len(robots))

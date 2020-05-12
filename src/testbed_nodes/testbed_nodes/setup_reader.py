@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
+from sys import version_info
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import expanduser
 import csv
 from collections import defaultdict
 from json import dumps
-try:
+
+if version_info[0] == 2:
+    # Python2 is for mininet
+    from mn_wifi.link import wmediumd, adhoc, mesh # for class
+    MININET_WIFI_CLASSES = {"adhoc":adhoc, "mesh":mesh}
+
+elif version_info[0] == 3:
+    # Python3 is for ROS2
     from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
          QoSReliabilityPolicy, QoSProfile
-except SyntaxError:
-    # Python2 or incompatible ROS2 version
-    pass
+    MININET_WIFI_CLASSES = {"adhoc":"adhoc", "mesh":"mesh"}
 
 MODES = \
 {
@@ -41,7 +47,18 @@ MODES = \
 
     # Graph
     "Plot Graph":["param=value"],
+
+    # Log Level
+    "Log Level":["Level"],
 }
+
+def _json_serialize(_class):
+    if _class in MININET_WIFI_CLASSES.values():
+        # serialize mininet-WiFi class object as its class name
+        return _class.__name__
+    else:
+        # use basic JSON types
+        return _class.__dict__
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def qos_profile(d):
@@ -83,17 +100,25 @@ def qos_profile(d):
 
     return profile
 
-# returned dict values are float else string
+# returned dict values are: float, int, str, or predefined mininet-WiFi class
 def _typed_params(param_list):
     params = dict()
     for pair in param_list:
         key,value=pair.split("=")
         key,value=key.strip(),value.strip()
-        # values are float if possible else string
+
         try:
-            params[key]=float(value)
+            # float or int
+            if "." in value:
+                params[key]=float(value)
+            else:
+                params[key]=int(value)
         except ValueError:
-            params[key]=value.replace(";",",")
+            # class or string
+            if key == "cls":
+                params[key] = MININET_WIFI_CLASSES[value]
+            else:
+                params[key]=value.replace(";",",")
     return params
 
 def _named_typed_params(row):
@@ -154,6 +179,7 @@ def read_setup(filename):
     propagation_model = dict()
     mobility_model = dict()
     plot_graph = dict()
+    log_level = ""
 
     with open(filename) as f:
         mode="start"
@@ -201,6 +227,8 @@ def read_setup(filename):
                     mobility_model = _typed_params(row)
                 elif mode == "Plot Graph":
                     plot_graph = _typed_params(row)
+                elif mode == "Log Level":
+                    log_level = row[0]
                 else:
                     print("invalid mode '%s' for row '%s'"%(
                                             mode, ",".join(row)))
@@ -217,12 +245,13 @@ def read_setup(filename):
     setup["propagation_model"] = propagation_model
     setup["mobility_model"] = mobility_model
     setup["plot_graph"] = plot_graph
+    setup["log_level"] = log_level
     setup["all_recipients"] = _recipients(subscribers, robots)
     return setup
 
 def show_setup(filename, setup):
     print("Scenario file: %s"%filename)
-    print(dumps(setup, indent=4, sort_keys=True))
+    print(dumps(setup, indent=4, sort_keys=True, default=_json_serialize))
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="Check your setup file.",
