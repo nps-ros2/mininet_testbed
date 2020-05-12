@@ -36,3 +36,6 @@ Plot Graph
 param=value, ...
 #max_x=100, max_y=100
 
+Log Level
+Level
+info
