@@ -10,7 +10,7 @@ Robots
 Name, Role
 sta1, GS
 sta2, red_team
-#sta3, red_team
+sta3, red_team
 
 Stations
 Name, param=value, ...
