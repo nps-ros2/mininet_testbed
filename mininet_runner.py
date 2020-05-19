@@ -23,17 +23,14 @@ def start_runner(setup_file, out_file):
     setup = read_setup(setup_file)
     show_setup(setup_file, setup)
     robots = setup["robots"]
-    access_points = setup["access_points"]
     stations = setup["stations"]
     links = setup["links"]
     propagation_model = setup["propagation_model"]
     mobility_model = setup["mobility_model"]
-    log_level = setup["log_level"]
     plot_graph = setup["plot_graph"]
 
     # log
-    if log_level:
-        setLogLevel(log_level)
+    setLogLevel("info")
 
     # get total count of robot nodes
     print("Robot count: %d"%len(robots))
@@ -41,20 +38,14 @@ def start_runner(setup_file, out_file):
     "Create a network."
     net = Mininet_wifi(link=wmediumd, wmediumd_mode=interference)
 
-    # nodes, e.g. access points and stations
-    node_objects = dict()
-
-    # access point nodes
-    info("mininet_runner: Creating access point nodes\n")
-    for robot_name, params in access_points.items():
-        print("addAccessPoint %s: %s"%(robot_name, params))
-        node_objects[robot_name] = net.addAccessPoint(robot_name, **params)
+    # instantiated stations
+    station_objects = dict()
 
     # station nodes
     info("mininet_runner: Creating station nodes\n")
-    for robot_name, params in stations.items():
+    for robot_name, params in stations:
         print("addAccessPoint %s: %s"%(robot_name, params))
-        node_objects[robot_name] = net.addStation(robot_name, **params)
+        station_objects[robot_name] = net.addStation(robot_name, **params)
 
     if propagation_model:
         info("mininet_runner: Configuring propagation model\n")
@@ -64,14 +55,11 @@ def start_runner(setup_file, out_file):
     net.configureWifiNodes()
 
     info("mininet_runner: Creating links\n")
-    for robot_name, params in links.items():
-        node_object = node_objects[robot_name]
-        print("robot_name: ", robot_name)
-        print("link params: ", params)
-        net.addLink(node_object, **params)
+    for robot_name, params in links:
+        print("addLink %s: %s"%(robot_name, params))
+        net.addLink(station_objects[robot_name], **params)
 
-    if plot_graph:
-        net.plotGraph(**plot_graph)
+    net.plotGraph(**plot_graph)
 
     info("mininet_runner: Configuring mobility model\n")
     net.setMobilityModel(**mobility_model)
@@ -83,17 +71,17 @@ def start_runner(setup_file, out_file):
     info("\nmininet_runner: Starting ROS2 nodes...\n")
     for robot in robots:
         robot_name = robot["robot_name"]
-        node_object = node_objects[robot_name]
+        station_object = station_objects[robot_name]
         role = robot["role"]
         logfile = "_log_%s"%robot_name
         cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s " \
               "> %s 2>&1 &"%(robot_name, role, setup_file, out_file, logfile)
         info("mininet_runner: Starting '%s'\n"%cmd)
-        node_object.cmd(cmd)
+        station_object.cmd(cmd)
 #        info("mininet_runner: Not Starting '%s'\n"%cmd)
 
     # start Wireshark on first node object (first robot)
-    node_objects[robots[0]["robot_name"]].cmd("wireshark &")
+    station_objects[robots[0]["robot_name"]].cmd("wireshark &")
 
     info("mininet_runner: Running CLI\n")
     CLI_wifi(net)

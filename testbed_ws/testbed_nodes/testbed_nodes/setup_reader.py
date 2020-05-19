@@ -17,44 +17,6 @@ elif version_info[0] == 3:
          QoSReliabilityPolicy, QoSProfile
     MININET_WIFI_CLASSES = {"adhoc":"adhoc", "mesh":"mesh"}
 
-MODES = \
-{
-    # start
-    "start":[],
-
-    # Publishers
-    "Publishers":["Role", "Subscription", "Frequency", "Size",
-                  "History", "Depth", "Reliability", "Durability"],
-
-    # Subscribers
-    "Subscribers":["Role", "Subscription",
-                   "History", "Depth", "Reliability", "Durability"],
-
-    # Robots
-    "Robots":["Name", "Role"],
-
-    # Access Points
-    "Access Points":["Name", "param=value"],
-
-    # Stations
-    "Stations":["Name", "param=value"],
-
-    # Links
-    "Links":["Name", "param=value"],
-
-    # Propagation Model
-    "Propagation Model":["param=value"],
-
-    # Mobility Model
-    "Mobility Model":["param=value"],
-
-    # Graph
-    "Plot Graph":["param=value"],
-
-    # Log Level
-    "Log Level":["Level"],
-}
-
 def _json_serialize(_class):
     if _class in MININET_WIFI_CLASSES.values():
         # serialize mininet-WiFi class object as its class name
@@ -177,13 +139,11 @@ def read_setup(filename):
     publishers = list()
     subscribers = list()
     robots = list()
-    access_points = defaultdict(dict)
-    stations = defaultdict(dict)
-    links = defaultdict(dict)
+    stations = list()
+    links = list()
     propagation_model = dict()
     mobility_model = dict()
     plot_graph = dict()
-    log_level = ""
 
     with open(filename) as f:
         reader = csv.reader(f)
@@ -206,23 +166,18 @@ def read_setup(filename):
                     subscribers.append(_subscribe_record(row[1:]))
                 elif mode == "Robot":
                     robots.append(_robot_record(row[1:]))
-                elif mode == "Access Point":
-                    robot_name, typed_params = _named_typed_params(row[1:])
-                    access_points[robot_name] = typed_params
                 elif mode == "Station":
                     robot_name, typed_params = _named_typed_params(row[1:])
-                    stations[robot_name] = typed_params
+                    stations.append((robot_name, typed_params))
                 elif mode == "Link":
                     robot_name, typed_params = _named_typed_params(row[1:])
-                    links[robot_name] = typed_params
+                    links.append((robot_name, typed_params))
                 elif mode == "Propagation Model":
                     propagation_model = _typed_params(row[1:])
                 elif mode == "Mobility Model":
                     mobility_model = _typed_params(row[1:])
                 elif mode == "Plot Graph":
                     plot_graph = _typed_params(row[1:])
-                elif mode == "Log Level":
-                    log_level = row[1]
                 else:
                     print("invalid directive '%s' for row '%s'"%(
                                             mode, ",".join(row)))
@@ -234,13 +189,11 @@ def read_setup(filename):
     setup["publishers"] = publishers
     setup["subscribers"] = subscribers
     setup["robots"] = robots
-    setup["access_points"] = access_points
     setup["stations"] = stations
     setup["links"] = links
     setup["propagation_model"] = propagation_model
     setup["mobility_model"] = mobility_model
     setup["plot_graph"] = plot_graph
-    setup["log_level"] = log_level
     setup["all_recipients"] = _recipients(subscribers, robots)
     return setup
 

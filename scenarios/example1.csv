@@ -29,4 +29,3 @@ Propagation Model, model=logDistance, exp=4
 # Mobility Model
 Plot Graph, min_x=-2, min_y=-2, max_x=2, max_y=2
 
-Log Level, info
