@@ -27,6 +27,9 @@ def start_runner(setup_file, out_file):
     links = setup["links"]
     propagation_model = setup["propagation_model"]
     mobility_model = setup["mobility_model"]
+    start_mobility = setup["start_mobility"]
+    mobilities = setup["mobilities"]
+    stop_mobility = setup["stop_mobility"]
     plot_graph = setup["plot_graph"]
 
     # log
@@ -59,11 +62,18 @@ def start_runner(setup_file, out_file):
         print("addLink %s: %s"%(robot_name, params))
         net.addLink(station_objects[robot_name], **params)
 
-    net.plotGraph(**plot_graph)
+    # mobility
+    net.startMobility(**start_mobility)
+    for robot_name, start_or_stop, params in mobilities:
+        print("mobility %s: %s: %s"%(robot_name, start_or_stop, params))
+        net.mobility(station_objects[robot_name], start_or_stop, **params)
+
+    if plot_graph != None: # do this evin if empty dict
+        net.plotGraph(**plot_graph)
 
     info("mininet_runner: Configuring mobility model\n")
+    print("setMobilityModel: %s"%(mobility_model))
     net.setMobilityModel(**mobility_model)
-
 
     info("mininet_runner: Starting network\n")
     net.build()

@@ -1,39 +1,82 @@
-Publishers
-Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
-R1_role, R1_to_R2, 2, 40, keep_last, 0, best_effort, volatile
-R2_role, R2_to_R3, 2, 40, keep_last, 0, best_effort, volatile
-R3_role, R3_to_R4, 2, 40, keep_last, 0, best_effort, volatile
-R4_role, R4_to_R5, 2, 40, keep_last, 0, best_effort, volatile
-R5_role, R5_to_R6, 2, 40, keep_last, 0, best_effort, volatile
-R6_role, R6_to_R7, 2, 40, keep_last, 0, best_effort, volatile
-R7_role, R7_to_R8, 2, 40, keep_last, 0, best_effort, volatile
-R8_role, R8_to_R9, 2, 40, keep_last, 0, best_effort, volatile
-R9_role, R9_to_R10, 2, 40, keep_last, 0, best_effort, volatile
-R10_role, R10_to_R1, 2, 40, keep_last, 0, best_effort, volatile
+# Publisher, Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+Publisher, R1_role, R1_to_R2, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R2_role, R2_to_R3, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R3_role, R3_to_R4, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R4_role, R4_to_R5, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R5_role, R5_to_R6, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R6_role, R6_to_R7, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R7_role, R7_to_R8, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R8_role, R8_to_R9, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R9_role, R9_to_R10, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R10_role, R10_to_R1, 2, 40, keep_last, 0, best_effort, volatile
 
-Subscribers
-Role, Subscription, History, Depth, Reliability, Durability
-R1_role, R10_to_R1, keep_last, 0, best_effort, volatile
-R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
-R3_role, R2_to_R3, keep_last, 0, best_effort, volatile
-R4_role, R3_to_R4, keep_last, 0, best_effort, volatile
-R5_role, R4_to_R5, keep_last, 0, best_effort, volatile
-R6_role, R5_to_R6, keep_last, 0, best_effort, volatile
-R7_role, R6_to_R7, keep_last, 0, best_effort, volatile
-R8_role, R7_to_R8, keep_last, 0, best_effort, volatile
-R9_role, R8_to_R9, keep_last, 0, best_effort, volatile
-R10_role, R9_to_R10, keep_last, 0, best_effort, volatile
+# Subscriber, Role, Subscription, History, Depth, Reliability, Durability
+Subscriber, R1_role, R10_to_R1, keep_last, 0, best_effort, volatile
+Subscriber, R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
+Subscriber, R3_role, R2_to_R3, keep_last, 0, best_effort, volatile
+Subscriber, R4_role, R3_to_R4, keep_last, 0, best_effort, volatile
+Subscriber, R5_role, R4_to_R5, keep_last, 0, best_effort, volatile
+Subscriber, R6_role, R5_to_R6, keep_last, 0, best_effort, volatile
+Subscriber, R7_role, R6_to_R7, keep_last, 0, best_effort, volatile
+Subscriber, R8_role, R7_to_R8, keep_last, 0, best_effort, volatile
+Subscriber, R9_role, R8_to_R9, keep_last, 0, best_effort, volatile
+Subscriber, R10_role, R9_to_R10, keep_last, 0, best_effort, volatile
 
-Robots
-Name, Role, X, Y, Z, Moves
-R1, R1_role,0.1,0,0,false
-R2, R2_role,0.2,0,0,false
-R3, R3_role,0.3,0,0,false
-R4, R4_role,0.4,0,0,false
-R5, R5_role,0.5,0,0,false
-R6, R6_role,0.6,0,0,false
-R7, R7_role,0.7,0,0,false
-R8, R8_role,0.8,0,0,false
-R9, R9_role,0.9,0,0,false
-R10, R10_role,1.0,0,0,false
+# Robot, Name, Role, X, Y, Z, Moves
+Robot, R1, R1_role,0.1,0,0,false
+Robot, R2, R2_role,0.2,0,0,false
+Robot, R3, R3_role,0.3,0,0,false
+Robot, R4, R4_role,0.4,0,0,false
+Robot, R5, R5_role,0.5,0,0,false
+Robot, R6, R6_role,0.6,0,0,false
+Robot, R7, R7_role,0.7,0,0,false
+Robot, R8, R8_role,0.8,0,0,false
+Robot, R9, R9_role,0.9,0,0,false
+Robot, R10, R10_role,1.0,0,0,false
 
+# Station, Name, param:value, ...
+Station, R1
+Station, R2
+Station, R3
+Station, R4
+Station, R5
+Station, R6
+Station, R7
+Station, R8
+Station, R9
+Station, R10
+
+#Station, R1, range=100, position=1;0;0
+#Station, R2, range=100, position=2;0;0
+#Station, R3, range=100, position=3;0;0
+#Station, R4, range=100, position=4;0;0
+#Station, R5, range=100, position=5;0;0
+#Station, R6, range=100, position=6;0;0
+#Station, R7, range=100, position=7;0;0
+#Station, R8, range=100, position=8;0;0
+#Station, R9, range=100, position=9;0;0
+#Station, R10, range=100, position=10;0;0
+
+# Links, Name, param:value, ...
+Link, R1, cls=adhoc, intf=R1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R2, cls=adhoc, intf=R2-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R3, cls=adhoc, intf=R3-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R4, cls=adhoc, intf=R4-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R5, cls=adhoc, intf=R5-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R6, cls=adhoc, intf=R6-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R7, cls=adhoc, intf=R7-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R8, cls=adhoc, intf=R8-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R9, cls=adhoc, intf=R9-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R10, cls=adhoc, intf=R10-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+
+Propagation Model, model=logDistance, exp=4
+
+Mobility Model, time=0, model=RandomWayPoint, max_x=100, max_y=100, seed=20
+#Start Mobility, time=5
+#Mobility, R1, start, time=7, position=1.0;0.0;0.0
+#Mobility, R1, stop, time=10, position=10.0;0.0;0.0
+##Mobility, R1, start, time=17, position=0.0;10.0;0.0
+##Mobility, R1, stop, time=20, position=10.0;10.0;0.0
+#Stop Mobility, time=50
+
+Plot Graph

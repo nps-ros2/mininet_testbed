@@ -143,7 +143,10 @@ def read_setup(filename):
     links = list()
     propagation_model = dict()
     mobility_model = dict()
-    plot_graph = dict()
+    start_mobility = dict()
+    mobilities = list()
+    stop_mobility = dict()
+    plot_graph = None # else dict()
 
     with open(filename) as f:
         reader = csv.reader(f)
@@ -176,6 +179,12 @@ def read_setup(filename):
                     propagation_model = _typed_params(row[1:])
                 elif mode == "Mobility Model":
                     mobility_model = _typed_params(row[1:])
+                elif mode == "Start Mobility":
+                    start_mobility = _typed_params(row[1:])
+                elif mode == "Mobility": # robot_name, "start" or "stop", ...
+                    mobilities.append((row[1], row[2], _typed_params(row[3:])))
+                elif mode == "Stop Mobility":
+                    stop_mobility = _typed_params(row[1:])
                 elif mode == "Plot Graph":
                     plot_graph = _typed_params(row[1:])
                 else:
@@ -193,6 +202,9 @@ def read_setup(filename):
     setup["links"] = links
     setup["propagation_model"] = propagation_model
     setup["mobility_model"] = mobility_model
+    setup["start_mobility"] = start_mobility
+    setup["mobilities"] = mobilities
+    setup["stop_mobility"] = stop_mobility
     setup["plot_graph"] = plot_graph
     setup["all_recipients"] = _recipients(subscribers, robots)
     return setup

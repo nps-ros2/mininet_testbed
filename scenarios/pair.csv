@@ -9,8 +9,10 @@ Robot, R1, R1_role
 Robot, R2, R2_role
 
 # Station, Name, param:value, ...
-Station, R1, range=100, position=20;20;0
-Station, R2, range=100, position=25;25;0
+#Station, R1, range=100, position=20;20;0
+#Station, R2, range=100, position=25;25;0
+Station, R1
+Station, R2
 
 # Links, Name, param:value, ...
 Link, R1, cls=adhoc, intf=R1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
@@ -18,5 +20,5 @@ Link, R2, cls=adhoc, intf=R2-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT4
 
 Propagation Model, model=logDistance, exp=4
 
-Mobility Model, time=0, model=RandomWayPoint
+Mobility Model, time=0, model=RandomDirection, max_x=30, max_y=30, seed=20
 
