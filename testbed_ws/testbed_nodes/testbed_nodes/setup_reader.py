@@ -33,6 +33,9 @@ MODES = \
     # Robots
     "Robots":["Name", "Role"],
 
+    # Access Points
+    "Access Points":["Name", "param=value"],
+
     # Stations
     "Stations":["Name", "param=value"],
 
@@ -174,6 +177,7 @@ def read_setup(filename):
     publishers = list()
     subscribers = list()
     robots = list()
+    access_points = defaultdict(dict)
     stations = defaultdict(dict)
     links = defaultdict(dict)
     propagation_model = dict()
@@ -182,9 +186,7 @@ def read_setup(filename):
     log_level = ""
 
     with open(filename) as f:
-        mode="start"
         reader = csv.reader(f)
-        total_count = 0
         for row in reader:
 
             # remove spaces
@@ -195,42 +197,34 @@ def read_setup(filename):
             if not row or not row[0] or row[0][0]=="#":
                 continue
 
-            # model label sets parser mode
-            if row[0] in MODES.keys():
-                mode = row[0]
-                header = MODES[mode]
-                continue
-
-            # accept mode-appropriate header
-            if row[:len(header)] == header:
-                continue
-
+            # parse by mode
+            mode = row[0]
             try:
-                # parse by mode
-                if mode == "Publishers":
-                    publishers.append(_publish_record(row))
-                elif mode == "Subscribers":
-                    subscribers.append(_subscribe_record(row))
-                elif mode == "Robots":
-                    robots.append(_robot_record(row))
-                elif mode == "Stations":
-                    robot_name, typed_params = _named_typed_params(row)
+                if mode == "Publisher":
+                    publishers.append(_publish_record(row[1:]))
+                elif mode == "Subscriber":
+                    subscribers.append(_subscribe_record(row[1:]))
+                elif mode == "Robot":
+                    robots.append(_robot_record(row[1:]))
+                elif mode == "Access Point":
+                    robot_name, typed_params = _named_typed_params(row[1:])
+                    access_points[robot_name] = typed_params
+                elif mode == "Station":
+                    robot_name, typed_params = _named_typed_params(row[1:])
                     stations[robot_name] = typed_params
-                elif mode == "Links":
-                    robot_name, typed_params = _named_typed_params(row)
+                elif mode == "Link":
+                    robot_name, typed_params = _named_typed_params(row[1:])
                     links[robot_name] = typed_params
                 elif mode == "Propagation Model":
-                    propagation_model = _typed_params(row)
+                    propagation_model = _typed_params(row[1:])
                 elif mode == "Mobility Model":
-                    mobility_model = _typed_params(row)
-                elif mode == "Mobility Model":
-                    mobility_model = _typed_params(row)
+                    mobility_model = _typed_params(row[1:])
                 elif mode == "Plot Graph":
-                    plot_graph = _typed_params(row)
+                    plot_graph = _typed_params(row[1:])
                 elif mode == "Log Level":
-                    log_level = row[0]
+                    log_level = row[1]
                 else:
-                    print("invalid mode '%s' for row '%s'"%(
+                    print("invalid directive '%s' for row '%s'"%(
                                             mode, ",".join(row)))
                     raise RuntimeError("Invalid table.  Aborting")
             except Exception:
@@ -240,6 +234,7 @@ def read_setup(filename):
     setup["publishers"] = publishers
     setup["subscribers"] = subscribers
     setup["robots"] = robots
+    setup["access_points"] = access_points
     setup["stations"] = stations
     setup["links"] = links
     setup["propagation_model"] = propagation_model

@@ -1,43 +1,32 @@
-Publishers
-Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
-GS, odometry, 10, 500, keep_last, 0, reliable, volatile
+# Publisher, Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+Publisher, GS, odometry, 10, 500, keep_last, 0, reliable, volatile
 
-Subscribers
-Role, Subscription, History, Depth, Reliability, Durability
-red_team, odometry, keep_last, 0, reliable, volatile
+# Subscribers, Role, Subscription, History, Depth, Reliability, Durability
+Subscriber, red_team, odometry, keep_last, 0, reliable, volatile
 
-Robots
-Name, Role
-R1, GS
-R2, red_team
-R3, red_team
-R4, red_team
-R5, red_team
+# Robot, Name, Role
+Robot, R1, GS
+Robot, R2, red_team
+Robot, R3, red_team
+Robot, R4, red_team
+Robot, R5, red_team
 
-Stations
-Name, param=value, ...
-R1, range=100, position=0;0;0
-R2, range=100, position=1;0;0
-R3, range=100, position=0;1;0
-R4, range=100, position=-1;0;0
-R5, range=100, position=0;-1;0
+# Station, Name, param=value, ...
+Station, R1, range=100, position=0;0;0
+Station, R2, range=100, position=1;0;0
+Station, R3, range=100, position=0;1;0
+Station, R4, range=100, position=-1;0;0
+Station, R5, range=100, position=0;-1;0
 
-Links
-Name, param=value, ...
-R1, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-R2, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-R3, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-R4, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-R5, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+# Link, Name, param=value, ...
+Link, R1, cls=adhoc, intf=R1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R2, cls=adhoc, intf=R2-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R3, cls=adhoc, intf=R3-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R4, cls=adhoc, intf=R4-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, R5, cls=adhoc, intf=R5-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
 
-Propagation Model
-param=value, ...
-model=logDistance, exp=4
+Propagation Model, model=logDistance, exp=4
+# Mobility Model
+Plot Graph, min_x=-2, min_y=-2, max_x=2, max_y=2
 
-Mobility Model
-param=value, ...
-
-Plot Graph
-param=value, ...
-min_x=-2, min_y=-2, max_x=2, max_y=2
-
+Log Level, info

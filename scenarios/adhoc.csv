@@ -1,41 +1,31 @@
-Publishers
-Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
-red_team, odometry, 10, 500, keep_last, 0, best_effort, volatile
+# Publisher, Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+Publisher, red_team, odometry, 10, 500, keep_last, 0, best_effort, volatile
 
-Subscribers
-Role, Subscription, History, Depth, Reliability, Durability
-GS, odometry, keep_last, 0, best_effort, volatile
+# Subscriber, Role, Subscription, History, Depth, Reliability, Durability
+Subscriber, GS, odometry, keep_last, 0, best_effort, volatile
 
-Robots
-Name, Role
-sta1, GS
-sta2, red_team
-sta3, red_team
+# Robot, Name, Role
+Robot, sta1, GS
+Robot, sta2, red_team
+Robot, sta3, red_team
 
-Stations
-Name, param=value, ...
+# Station, Name, param=value, ...
 # fixed position
-sta1, position=10;10;0, range=100
-sta2, position=50;10;0, range=100
-sta3, position=90;10;0, range=100
+Station, sta1, position=10;10;0, range=100
+Station, sta2, position=50;10;0, range=100
+Station, sta3, position=90;10;0, range=100
 
-Links
-Name, param=value, ...
-sta1, cls=adhoc, intf=sta1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-sta2, cls=adhoc, intf=sta2-wlan0, ssid=adhocNet, mode=g, channel=5
-sta3, cls=adhoc, intf=sta3-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+# Link, Name, param=value, ...
+Link, sta1, cls=adhoc, intf=sta1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
+Link, sta2, cls=adhoc, intf=sta2-wlan0, ssid=adhocNet, mode=g, channel=5
+Link, sta3, cls=adhoc, intf=sta3-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
 
-Propagation Model
-param=value, ...
-model=logDistance, exp=4
+Propagation Model, model=logDistance, exp=4
 
-Mobility Model
-param=value, ...
+# Mobility Model
 
-Plot Graph
-param=value, ...
-#max_x=100, max_y=100
+Plot Graph, max_x=100, max_y=100
 
-Log Level
-Level
-info
+# Log Level, Level
+Log Level, info
+
