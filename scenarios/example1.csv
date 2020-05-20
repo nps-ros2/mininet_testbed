@@ -26,6 +26,6 @@ Link, R4, cls=adhoc, intf=R4-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT4
 Link, R5, cls=adhoc, intf=R5-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
 
 Propagation Model, model=logDistance, exp=4
-# Mobility Model
+
 Plot Graph, min_x=-2, min_y=-2, max_x=2, max_y=2
 

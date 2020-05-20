@@ -47,11 +47,12 @@ def start_runner(setup_file, out_file):
     # station nodes
     info("mininet_runner: Creating station nodes\n")
     for robot_name, params in stations:
-        print("addAccessPoint %s: %s"%(robot_name, params))
+        print("addStation %s: %s"%(robot_name, params))
         station_objects[robot_name] = net.addStation(robot_name, **params)
 
     if propagation_model:
-        info("mininet_runner: Configuring propagation model\n")
+#        info("mininet_runner: Configuring propagation model\n")
+        print("setPropagationModel: %s"%propagation_model)
         net.setPropagationModel(**propagation_model)
 
     info("mininet_runner: Configuring wifi nodes\n")
@@ -63,17 +64,21 @@ def start_runner(setup_file, out_file):
         net.addLink(station_objects[robot_name], **params)
 
     # mobility
-    net.startMobility(**start_mobility)
+    if start_mobility:
+        net.startMobility(**start_mobility)
     for robot_name, start_or_stop, params in mobilities:
         print("mobility %s: %s: %s"%(robot_name, start_or_stop, params))
         net.mobility(station_objects[robot_name], start_or_stop, **params)
+    if stop_mobility:
+        net.stopMobility(**stop_mobility)
 
     if plot_graph != None: # do this evin if empty dict
         net.plotGraph(**plot_graph)
 
-    info("mininet_runner: Configuring mobility model\n")
-    print("setMobilityModel: %s"%(mobility_model))
-    net.setMobilityModel(**mobility_model)
+    if mobility_model:
+        info("mininet_runner: Configuring mobility model\n")
+        print("setMobilityModel: %s"%(mobility_model))
+        net.setMobilityModel(**mobility_model)
 
     info("mininet_runner: Starting network\n")
     net.build()
