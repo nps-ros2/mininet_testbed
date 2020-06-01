@@ -35,27 +35,16 @@ Robot, R9, R9_role,0.9,0,0,false
 Robot, R10, R10_role,1.0,0,0,false
 
 # Station, Name, param:value, ...
-Station, R1
-Station, R2
-Station, R3
-Station, R4
-Station, R5
-Station, R6
-Station, R7
-Station, R8
-Station, R9
-Station, R10
-
-#Station, R1, range=100, position=1;0;0
-#Station, R2, range=100, position=2;0;0
-#Station, R3, range=100, position=3;0;0
-#Station, R4, range=100, position=4;0;0
-#Station, R5, range=100, position=5;0;0
-#Station, R6, range=100, position=6;0;0
-#Station, R7, range=100, position=7;0;0
-#Station, R8, range=100, position=8;0;0
-#Station, R9, range=100, position=9;0;0
-#Station, R10, range=100, position=10;0;0
+Station, R1, range=100
+Station, R2, range=100
+Station, R3, range=100
+Station, R4, range=100
+Station, R5, range=100
+Station, R6, range=100
+Station, R7, range=100
+Station, R8, range=100
+Station, R9, range=100
+Station, R10, range=100
 
 # Links, Name, param:value, ...
 Link, R1, cls=adhoc, intf=R1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
@@ -72,11 +61,5 @@ Link, R10, cls=adhoc, intf=R10-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=H
 Propagation Model, model=logDistance, exp=4
 
 Mobility Model, time=0, model=RandomWayPoint, max_x=100, max_y=100, seed=20
-#Start Mobility, time=5
-#Mobility, R1, start, time=7, position=1.0;0.0;0.0
-#Mobility, R1, stop, time=10, position=10.0;0.0;0.0
-##Mobility, R1, start, time=17, position=0.0;10.0;0.0
-##Mobility, R1, stop, time=20, position=10.0;10.0;0.0
-#Stop Mobility, time=50
 
 Plot Graph

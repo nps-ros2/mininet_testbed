@@ -76,13 +76,12 @@ def scenario_topology(setup):
     return net
 
 # import file and run its topology(args) function, return net
-def code_topology(topology_args):
-    args = topology_args.split(" ")
-    code_filename = abspath(expanduser(args[0]))
+def code_topology(code_filename):
+    code_filename = abspath(expanduser(code_filename))
     print("Building network topology from %s"%code_filename)
     # https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
-    topology_module = load_source("topology", code_filename)
-    net = topology_module.topology(args[1:])
+    topology_module = load_source("myNetwork", code_filename)
+    net = topology_module.myNetwork()
     return net
 
 def start_robots(net, robots, setup_file, out_file):
@@ -112,12 +111,16 @@ if __name__ == '__main__':
     parser = ArgumentParser(description="Start Mininet swarm emulation")
     parser.add_argument("setup_file", type=str, help="Testbed setup file")
     parser.add_argument("out_file", type=str, help="Output file")
-    parser.add_argument("-t", "--topology", type=str,
-                        help="Use topology from Python file")
+    parser.add_argument("-s", "--script_setup", type=str,
+                        help="Use network setup script from Python file")
 
     args = parser.parse_args()
     setup_file = expanduser(args.setup_file)
     out_file = expanduser(args.out_file)
+    if args.script_setup:
+        script_setup_filename = abspath(expanduser(args.script_setup))
+    else:
+        script_setup_filename = None
 
     # clear any existing content from out_file
     with open(out_file, "w") as f:
@@ -130,10 +133,9 @@ if __name__ == '__main__':
     # show total count of robot nodes
     print("Robot count: %d"%len(setup["robots"]))
 
-    # network topology
-    if args.topology:
-        # use code topology
-        net = code_topology(args.topology)
+    # configuration approach
+    if args.script_setup:
+        net = code_topology(args.script_setup)
 
     else:
         # use the scenario topology
