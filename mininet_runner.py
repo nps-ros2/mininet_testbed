@@ -93,6 +93,8 @@ def start_robots(net, robots, setup_file, out_file):
         cmd = "ros2 run testbed_nodes testbed_robot %s %s %s %s " \
               "> %s 2>&1 &"%(robot_name, role, setup_file, out_file, logfile)
         info("mininet_runner: Starting '%s'\n"%cmd)
+        if not robot_name in net:
+            print("Error with robot name '%s'"%robot_name)
         net[robot_name].cmd(cmd)
 
     # start Wireshark on first node object (first robot)
