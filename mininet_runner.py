@@ -8,7 +8,7 @@ from imp import load_source # Python2
 
 from mininet.log import setLogLevel, info
 from mn_wifi.link import wmediumd, adhoc
-from mn_wifi.cli import CLI_wifi
+from mn_wifi.cli import CLI
 from mn_wifi.net import Mininet_wifi
 from mn_wifi.wmediumdConnector import interference
 
@@ -101,7 +101,7 @@ def start_robots(net, robots, setup_file, out_file):
     net[robots[0]["robot_name"]].cmd("wireshark &")
 
     info("mininet_runner: Running CLI\n")
-    CLI_wifi(net)
+    CLI(net)
 
     info("mininet_runner: Stopping network\n")
     net.stop()
