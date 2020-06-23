@@ -93,7 +93,7 @@ def _named_typed_params(row):
 def _publish_record(row):
     d=dict()
     d["role"]=row[0]
-    d["subscription"] = row[1]
+    d["topic"] = row[1]
     d["frequency"] = int(row[2])
     d["size"] = int(row[3])
 
@@ -106,7 +106,7 @@ def _publish_record(row):
 def _subscribe_record(row):
     d=dict()
     d["role"]=row[0]
-    d["subscription"] = row[1]
+    d["topic"] = row[1]
 
     d["history"] = row[2]
     d["depth"] = int(row[3])
@@ -120,17 +120,17 @@ def _robot_record(row):
     d["role"] = row[1]
     return d
 
-# get lists of subscriber robot names by key=subscription, value=list(names)
+# get lists of subscriber robot names by key=topic, value=list(names)
 def _recipients(subscribers, robots):
 
-    # get subscribers: key=subscription, value=list(robot names)
+    # get subscribers: key=topic, value=list(robot names)
     all_recipients = defaultdict(list)
     for robot in robots:
         print("robot: ", robot)
         for subscriber in subscribers:
             print("subscriber: ", subscriber)
             if subscriber["role"] == robot["role"]:
-                all_recipients[subscriber["subscription"]].append(
+                all_recipients[subscriber["topic"]].append(
                                                        robot["robot_name"])
     return all_recipients
 

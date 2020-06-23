@@ -1,6 +1,6 @@
 # NOTE: this can hang the networking system.
 
-# Publisher, Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+# Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
 Publisher, R01_role, R01_to_R02, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R02_role, R02_to_R03, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R03_role, R03_to_R04, 2, 40, keep_last, 0, best_effort, volatile
@@ -56,7 +56,7 @@ Publisher, R48_role, R48_to_R49, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R49_role, R49_to_R50, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R50_role, R50_to_R01, 2, 40, keep_last, 0, best_effort, volatile
 
-# Subscriber, Role, Subscription, History, Depth, Reliability, Durability
+# Subscriber, Role, Topic, History, Depth, Reliability, Durability
 Subscriber, R01_role, R50_to_R01, keep_last, 0, best_effort, volatile
 Subscriber, R02_role, R01_to_R02, keep_last, 0, best_effort, volatile
 Subscriber, R03_role, R02_to_R03, keep_last, 0, best_effort, volatile

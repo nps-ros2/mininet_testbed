@@ -1,4 +1,4 @@
-# Publisher, Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+# Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
 Publisher, R1_role, R1_to_R2, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R2_role, R2_to_R3, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R3_role, R3_to_R4, 2, 40, keep_last, 0, best_effort, volatile
@@ -10,7 +10,7 @@ Publisher, R8_role, R8_to_R9, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R9_role, R9_to_R10, 2, 40, keep_last, 0, best_effort, volatile
 Publisher, R10_role, R10_to_R1, 2, 40, keep_last, 0, best_effort, volatile
 
-# Subscriber, Role, Subscription, History, Depth, Reliability, Durability
+# Subscriber, Role, Topic, History, Depth, Reliability, Durability
 Subscriber, R1_role, R10_to_R1, keep_last, 0, best_effort, volatile
 Subscriber, R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
 Subscriber, R3_role, R2_to_R3, keep_last, 0, best_effort, volatile

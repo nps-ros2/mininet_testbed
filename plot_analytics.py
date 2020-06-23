@@ -7,7 +7,7 @@ import csv
 import matplotlib.pyplot as plt
 
 """
-get datapoints: from, to, subscription, time, bar_time, size, latency, %loss
+get datapoints: from, to, topic, time, bar_time, size, latency, %loss
 """
 def read_datapoints(filename, bar_period):
     with open(args.input_file) as f:
@@ -20,12 +20,12 @@ def read_datapoints(filename, bar_period):
         # in rx.  Unresolved rx will have latency and size values of 0.
         for c in row:
             try:
-                # key = from, to, subscription, tx_count
+                # key = from, to, topic, tx_count
                 # value = either: (tx_time) or (tx_time, size, latency)
                 key = c[0],c[1],c[2], int(c[3])
 
                 if len(c) == 5:
-                    # from, to, subscription, tx_count, timestamp
+                    # from, to, topic, tx_count, timestamp
                     if not t0:
                         t0 = float(c[4]) # start time in seconds
 
@@ -33,7 +33,7 @@ def read_datapoints(filename, bar_period):
                     points[key] = (tx_time,)
 
                 elif len(c) == 7:
-                    # from, to, subscription, tx_count, rx_count, size,timestamp
+                    # from, to, topic, tx_count, rx_count, size,timestamp
                     tx_time = points[key][0]
                     rx_time = float(c[6]) - t0
                     latency = (rx_time - tx_time) * 1000 # ms
@@ -53,7 +53,7 @@ def read_datapoints(filename, bar_period):
         # bar time
         bar_time = (value[0] // bar_period) * bar_period
         
-        # from, to, subscription, time, bar_time, size, latency, %loss
+        # from, to, topic, time, bar_time, size, latency, %loss
         if len(value) == 3:
             # resolved
             datapoints.append((*key[:3], value[0], bar_time, *value[1:], 0))
@@ -64,7 +64,7 @@ def read_datapoints(filename, bar_period):
 
 def latency_points(datapoints, max_ms_latency):
     # datapoints are:
-    # from, to, subscription, time, bar_time, size, latency, %loss
+    # from, to, topic, time, bar_time, size, latency, %loss
     count_total = 0
     count_dropped = 0
     count_outliers = 0
@@ -91,7 +91,7 @@ def latency_points(datapoints, max_ms_latency):
 
 def latency_histogram(datapoints, max_ms_latency):
     # datapoints are:
-    # from, to, subscription, time, bar_time, size, latency, %loss
+    # from, to, topic, time, bar_time, size, latency, %loss
     count_total = 0
     count_dropped = 0
     count_outliers = 0
@@ -124,7 +124,7 @@ def latency_histogram(datapoints, max_ms_latency):
 
 def throughput_histogram(datapoints):
     # datapoints are:
-    # from, to, subscription, time, bar_time, size, latency, %loss
+    # from, to, topic, time, bar_time, size, latency, %loss
     bar_throughputs = defaultdict(list)
 
     # get bar latencies as dict of list of size
@@ -147,7 +147,7 @@ def throughput_histogram(datapoints):
 
 def loss_histogram(datapoints):
     # datapoints are:
-    # from, to, subscription, time, bar_time, size, latency, %loss
+    # from, to, topic, time, bar_time, size, latency, %loss
     bar_losses = defaultdict(list)
 
     # get bar losses as dict of list of %loss values

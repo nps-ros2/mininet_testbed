@@ -13,17 +13,17 @@ from testbed_nodes.setup_reader import read_setup, qos_profile
 
 class TestbedRobot(Node):
 
-    def _make_publisher_timer_callback_function(self, subscription_name, size,
+    def _make_publisher_timer_callback_function(self, topic_name, size,
                                                 recipients, f):
         def fn():
-            self.publish_counters[subscription_name] += 1
-            transmit_count = self.publish_counters[subscription_name]
+            self.publish_counters[topic_name] += 1
+            transmit_count = self.publish_counters[topic_name]
 
             # compose message
             msg = TestbedMessage()
             msg.publisher_name = self.robot_name
             msg.tx_count = transmit_count
-            msg.message = subscription_name[0]*size
+            msg.message = topic_name[0]*size
 
             # compose network metadata log
             s = ""
@@ -31,12 +31,12 @@ class TestbedRobot(Node):
                 s += "%s,%s,%s,%d,%f\n"%(
                            self.robot_name,
                            recipient_robot_name,
-                           subscription_name,
+                           topic_name,
                            transmit_count,
                            perf_counter())
 
             # publish the message
-            self.publisher_managers[subscription_name].publish(msg)
+            self.publisher_managers[topic_name].publish(msg)
 
             # log the publish metadata
             flock(f, LOCK_EX) # exclusive lock
@@ -45,18 +45,18 @@ class TestbedRobot(Node):
             flock(f, LOCK_UN) # unlock
         return fn
 
-    def _make_subscriber_callback_function(self, subscription_name, f):
+    def _make_subscriber_callback_function(self, topic_name, f):
         def fn(msg):
-            self.subscribe_counters[subscription_name] += 1
-            receive_count = self.subscribe_counters[subscription_name]
+            self.subscribe_counters[topic_name] += 1
+            receive_count = self.subscribe_counters[topic_name]
 
-            # rx log: from, to, subscription, tx count, rx count, msg size, ts
+            # rx log: from, to, topic, tx count, rx count, msg size, ts
             response = "%s,%s,%s,%d,%d,%d,%f\n"%(
                            msg.publisher_name,
                            self.robot_name,
-                           subscription_name,
+                           topic_name,
                            msg.tx_count,
-                           self.subscribe_counters[subscription_name],
+                           self.subscribe_counters[topic_name],
                            len(msg.message),
                            perf_counter())
 
@@ -89,47 +89,47 @@ class TestbedRobot(Node):
         self.publisher_managers = dict()
         self.publisher_timers = list()
         for publisher in publishers:
-            # only publish subscriptions assigned to this role
+            # only publish topics assigned to this role
             if publisher["role"] != role:
                 continue
 
-            # the subscription for this publisher entry
-            subscription = publisher["subscription"]
+            # the topic
+            topic = publisher["topic"]
 
             # make and keep static references to publisher managers
-            self.publisher_managers[subscription] = self.create_publisher(
-                             TestbedMessage, subscription,
+            self.publisher_managers[topic] = self.create_publisher(
+                             TestbedMessage, topic,
                              qos_profile=qos_profile(publisher))
 
             # recipients
-            recipients = all_recipients[subscription]
+            recipients = all_recipients[topic]
 
             # the callback function that is dynamically created using closure
             publisher_timer_callback_function = \
                             self._make_publisher_timer_callback_function(
-                            subscription, publisher["size"], recipients, f)
+                            topic, publisher["size"], recipients, f)
             period = 1/publisher["frequency"]
             timer = self.create_timer(period, publisher_timer_callback_function)
             self.publisher_timers.append(timer)
 
         # start subscribers
-        self.subscription_managers = list()
+        self.subscriber_managers = list()
         for subscriber in subscribers:
 
-            # only subscribe to subscriptions assigned to this role
+            # only subscribe to topics assigned to this role
             if subscriber["role"] != role:
                 continue
 
             _subscriber_callback_function = \
                             self._make_subscriber_callback_function(
-                                  subscriber["subscription"], f)
+                                  subscriber["topic"], f)
 
-            subscription = self.create_subscription(
+            subscriber_object = self.create_subscription(
                                   TestbedMessage,
-                                  subscriber["subscription"],
+                                  subscriber["topic"],
                                   _subscriber_callback_function,
                                   qos_profile=qos_profile(subscriber))
-            self.subscription_managers.append(subscription)
+            self.subscriber_managers.append(subscriber_object)
 
 def main():
     parser = ArgumentParser(description="Generic testbed robot.",

@@ -1,7 +1,7 @@
-# Publisher, Role, Subscription, Frequency, Size, History, Depth, Reliability, Durability
+# Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
 Publisher, R1_role, R1_to_R2, 2, 8, keep_last, 0, best_effort, volatile
 
-# Subscriber, Role, Subscription, History, Depth, Reliability, Durability
+# Subscriber, Role, Topic, History, Depth, Reliability, Durability
 Subscriber, R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
 
 # Robot, Name, Role
