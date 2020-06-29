@@ -110,8 +110,9 @@ if __name__ == '__main__':
     # args
     parser = ArgumentParser(description="Start Mininet swarm emulation")
     parser.add_argument("py_file", type=str, help="Python network setup file")
-    parser.add_argument("csv_file", type=str, help="CSV testbed setup file")
-    parser.add_argument("out_file", type=str, help="Output file")
+    parser.add_argument("csv_file", type=str,
+                        help="CSV communication setup file")
+    parser.add_argument("out_file", type=str, help="Log output file")
 
     args = parser.parse_args()
     csv_file = expanduser(args.csv_file)
