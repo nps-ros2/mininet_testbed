@@ -1,65 +1,36 @@
 # Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
-Publisher, R1_role, R1_to_R2, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R2_role, R2_to_R3, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R3_role, R3_to_R4, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R4_role, R4_to_R5, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R5_role, R5_to_R6, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R6_role, R6_to_R7, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R7_role, R7_to_R8, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R8_role, R8_to_R9, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R9_role, R9_to_R10, 2, 40, keep_last, 0, best_effort, volatile
-Publisher, R10_role, R10_to_R1, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R01_role, R01_to_R02, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R02_role, R02_to_R03, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R03_role, R03_to_R04, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R04_role, R04_to_R05, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R05_role, R05_to_R06, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R06_role, R06_to_R07, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R07_role, R07_to_R08, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R08_role, R08_to_R09, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R09_role, R09_to_R10, 2, 40, keep_last, 0, best_effort, volatile
+Publisher, R10_role, R10_to_R01, 2, 40, keep_last, 0, best_effort, volatile
 
 # Subscriber, Role, Topic, History, Depth, Reliability, Durability
-Subscriber, R1_role, R10_to_R1, keep_last, 0, best_effort, volatile
-Subscriber, R2_role, R1_to_R2, keep_last, 0, best_effort, volatile
-Subscriber, R3_role, R2_to_R3, keep_last, 0, best_effort, volatile
-Subscriber, R4_role, R3_to_R4, keep_last, 0, best_effort, volatile
-Subscriber, R5_role, R4_to_R5, keep_last, 0, best_effort, volatile
-Subscriber, R6_role, R5_to_R6, keep_last, 0, best_effort, volatile
-Subscriber, R7_role, R6_to_R7, keep_last, 0, best_effort, volatile
-Subscriber, R8_role, R7_to_R8, keep_last, 0, best_effort, volatile
-Subscriber, R9_role, R8_to_R9, keep_last, 0, best_effort, volatile
-Subscriber, R10_role, R9_to_R10, keep_last, 0, best_effort, volatile
+Subscriber, R01_role, R10_to_R01, keep_last, 0, best_effort, volatile
+Subscriber, R02_role, R01_to_R02, keep_last, 0, best_effort, volatile
+Subscriber, R03_role, R02_to_R03, keep_last, 0, best_effort, volatile
+Subscriber, R04_role, R03_to_R04, keep_last, 0, best_effort, volatile
+Subscriber, R05_role, R04_to_R05, keep_last, 0, best_effort, volatile
+Subscriber, R06_role, R05_to_R06, keep_last, 0, best_effort, volatile
+Subscriber, R07_role, R06_to_R07, keep_last, 0, best_effort, volatile
+Subscriber, R08_role, R07_to_R08, keep_last, 0, best_effort, volatile
+Subscriber, R09_role, R08_to_R09, keep_last, 0, best_effort, volatile
+Subscriber, R10_role, R09_to_R10, keep_last, 0, best_effort, volatile
 
 # Robot, Name, Role
-Robot, R1, R1_role
-Robot, R2, R2_role
-Robot, R3, R3_role
-Robot, R4, R4_role
-Robot, R5, R5_role
-Robot, R6, R6_role
-Robot, R7, R7_role
-Robot, R8, R8_role
-Robot, R9, R9_role
+Robot, R01, R01_role
+Robot, R02, R02_role
+Robot, R03, R03_role
+Robot, R04, R04_role
+Robot, R05, R05_role
+Robot, R06, R06_role
+Robot, R07, R07_role
+Robot, R08, R08_role
+Robot, R09, R09_role
 Robot, R10, R10_role
 
-# Station, Name, param:value, ...
-Station, R1, range=100
-Station, R2, range=100
-Station, R3, range=100
-Station, R4, range=100
-Station, R5, range=100
-Station, R6, range=100
-Station, R7, range=100
-Station, R8, range=100
-Station, R9, range=100
-Station, R10, range=100
-
-# Links, Name, param:value, ...
-Link, R1, cls=adhoc, intf=R1-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R2, cls=adhoc, intf=R2-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R3, cls=adhoc, intf=R3-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R4, cls=adhoc, intf=R4-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R5, cls=adhoc, intf=R5-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R6, cls=adhoc, intf=R6-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R7, cls=adhoc, intf=R7-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R8, cls=adhoc, intf=R8-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R9, cls=adhoc, intf=R9-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-Link, R10, cls=adhoc, intf=R10-wlan0, ssid=adhocNet, mode=g, channel=5, ht_cap=HT40+
-
-Propagation Model, model=logDistance, exp=4
-
-Mobility Model, time=0, model=RandomWalk, max_x=100, max_y=100, seed=20
-
-Plot Graph
