@@ -10,14 +10,14 @@ import matplotlib.pyplot as plt
 get datapoints: from, to, topic, time, bar_time, size, latency, %loss
 """
 def read_datapoints(filename, bar_period):
+    points = dict()
+    t0=None
     with open(args.input_file) as f:
         row=csv.reader(f)
-        max_y=args.max_ms_latency
-        points = dict()
-        t0=None
 
-        # reading points is a two-step process: 1) find tx and 2) resolve
+        # Reading points is a two-step process: 1) find tx and 2) resolve
         # in rx.  Unresolved rx will have latency and size values of 0.
+        # Loop twice because items can be out of order: rx before tx.
         for c in row:
             try:
                 # key = from, to, topic, tx_count
@@ -33,17 +33,39 @@ def read_datapoints(filename, bar_period):
                     points[key] = (tx_time,)
 
                 elif len(c) == 7:
-                    # from, to, topic, tx_count, rx_count, size,timestamp
+                    pass
+
+                else:
+                    raise RuntimeError("unexpected length %d"%len(c))
+
+            except Exception as e:
+                print("disregarding row in first pass", c)
+                print(repr(e))
+
+    with open(args.input_file) as f:
+        row=csv.reader(f)
+        for c in row:
+            try:
+                # key = from, to, topic, tx_count
+                # value = either: (tx_time) or (tx_time, size, latency)
+                key = c[0],c[1],c[2], int(c[3])
+
+                if len(c) == 5:
+                    pass
+
+                elif len(c) == 7:
+                    # from, to, topic, tx_count, rx_count, size, timestamp
                     tx_time = points[key][0]
                     rx_time = float(c[6]) - t0
                     latency = (rx_time - tx_time) * 1000 # ms
                     size = int(c[5])
                     points[key] = (tx_time, size, latency)
+
                 else:
                     raise RuntimeError("unexpected length %d"%len(c))
 
             except Exception as e:
-                print("disregarding row", c)
+                print("disregarding row in second pass", c)
                 print(repr(e))
 
     # convert points into big list of tuple datapoints
