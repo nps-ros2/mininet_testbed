@@ -1,0 +1,203 @@
+{
+    "application": {
+        "apType": "ovs",
+        "authentication": "none",
+        "dpctl": "",
+        "enableWmediumd": "0",
+        "ipBase": "10.0.0.0/8",
+        "mode": "g",
+        "netflow": {
+            "nflowAddId": "0",
+            "nflowTarget": "",
+            "nflowTimeout": "600"
+        },
+        "openFlowVersions": {
+            "ovsOf10": "1",
+            "ovsOf11": "0",
+            "ovsOf12": "0",
+            "ovsOf13": "0"
+        },
+        "passwd": "",
+        "sflow": {
+            "sflowHeader": "128",
+            "sflowPolling": "30",
+            "sflowSampling": "400",
+            "sflowTarget": ""
+        },
+        "startCLI": "0",
+        "switchType": "ovs",
+        "terminalType": "xterm"
+    },
+    "aps": [
+        {
+            "number": "3",
+            "opts": {
+                "apType": "default",
+                "authentication": "none",
+                "channel": "1",
+                "controllers": [],
+                "hostname": "ap3",
+                "mode": "g",
+                "nodeNum": 3,
+                "passwd": "",
+                "range": "default",
+                "ssid": "ap3-ssid",
+                "wlans": 1
+            },
+            "x": "599.0",
+            "y": "132.0"
+        },
+        {
+            "number": "2",
+            "opts": {
+                "apType": "default",
+                "authentication": "none",
+                "channel": "1",
+                "controllers": [],
+                "hostname": "ap2",
+                "mode": "g",
+                "nodeNum": 2,
+                "passwd": "",
+                "range": "default",
+                "ssid": "ap2-ssid",
+                "wlans": 1
+            },
+            "x": "458.0",
+            "y": "213.0"
+        }
+    ],
+    "controllers": [],
+    "hosts": [
+        {
+            "number": "1",
+            "opts": {
+                "hostname": "h1",
+                "nodeNum": 1,
+                "sched": "host"
+            },
+            "x": "598.0",
+            "y": "212.0"
+        },
+        {
+            "number": "2",
+            "opts": {
+                "hostname": "h2",
+                "nodeNum": 2,
+                "sched": "host"
+            },
+            "x": "93.0",
+            "y": "408.0"
+        },
+        {
+            "number": "4",
+            "opts": {
+                "hostname": "h4",
+                "nodeNum": 4,
+                "sched": "host"
+            },
+            "x": "779.0",
+            "y": "93.0"
+        },
+        {
+            "number": "3",
+            "opts": {
+                "hostname": "h3",
+                "nodeNum": 3,
+                "sched": "host"
+            },
+            "x": "716.0",
+            "y": "45.0"
+        }
+    ],
+    "links": [
+        {
+            "dest": "ap3",
+            "opts": {},
+            "src": "h1"
+        },
+        {
+            "dest": "h3",
+            "opts": {},
+            "src": "ap3"
+        },
+        {
+            "dest": "h4",
+            "opts": {},
+            "src": "ap3"
+        },
+        {
+            "dest": "r2",
+            "opts": {},
+            "src": "r1"
+        },
+        {
+            "dest": "r3",
+            "opts": {},
+            "src": "r2"
+        },
+        {
+            "dest": "h2",
+            "opts": {},
+            "src": "r1"
+        },
+        {
+            "dest": "r4",
+            "opts": {},
+            "src": "r3"
+        },
+        {
+            "dest": "ap2",
+            "opts": {},
+            "src": "r4"
+        },
+        {
+            "dest": "h1",
+            "opts": {},
+            "src": "ap2"
+        }
+    ],
+    "stations": [],
+    "switches": [
+        {
+            "number": "2",
+            "opts": {
+                "hostname": "r2",
+                "nodeNum": 2,
+                "switchType": "legacyRouter"
+            },
+            "x": "135.0",
+            "y": "211.0"
+        },
+        {
+            "number": "1",
+            "opts": {
+                "hostname": "r1",
+                "nodeNum": 1,
+                "switchType": "legacyRouter"
+            },
+            "x": "135.0",
+            "y": "314.0"
+        },
+        {
+            "number": "4",
+            "opts": {
+                "hostname": "r4",
+                "nodeNum": 4,
+                "switchType": "legacyRouter"
+            },
+            "x": "367.0",
+            "y": "213.0"
+        },
+        {
+            "number": "3",
+            "opts": {
+                "hostname": "r3",
+                "nodeNum": 3,
+                "switchType": "legacyRouter"
+            },
+            "x": "253.0",
+            "y": "31.0"
+        }
+    ],
+    "version": "2"
+}
