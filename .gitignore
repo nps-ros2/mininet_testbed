@@ -16,6 +16,9 @@ _log_*
 # runtime
 _mininet_test_outfile
 
+# security files
+security/
+
 # Distribution / packaging
 .Python
 build/
