@@ -141,6 +141,9 @@ if __name__ == '__main__':
         # use the scenario topology
         net = scenario_topology(setup)
 
+    # avoid setup delay by performing an all-pairs ping
+    net.pingAll()
+
     # start the robots
     start_robots(net, setup["robots"], csv_file, out_file)
 
