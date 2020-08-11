@@ -1,62 +1,54 @@
 #!/usr/bin/python
 
-from mininet.node import Host, Node
+from mininet.net import Mininet
+from mininet.node import Controller, RemoteController, OVSController
+from mininet.node import CPULimitedHost, Host, Node
+from mininet.node import OVSKernelSwitch, UserSwitch
+from mininet.node import IVSSwitch
+from mininet.cli import CLI
 from mininet.log import setLogLevel, info
-from mn_wifi.net import Mininet_wifi
-from mn_wifi.node import Station, OVSKernelAP
-from mn_wifi.cli import CLI
-from mn_wifi.link import wmediumd
-from mn_wifi.wmediumdConnector import interference
+from mininet.link import TCLink, Intf
 from subprocess import call
-
 
 def myNetwork():
 
-    net = Mininet_wifi(topo=None,
-                       build=False,
-                       link=wmediumd,
-                       wmediumd_mode=interference,
-                       ipBase='10.0.0.0/8')
+    net = Mininet( topo=None,
+                   build=False,
+                   ipBase='10.0.0.0/8')
 
     info( '*** Adding controller\n' )
-    info( '*** Add switches/APs\n')
-    ap3 = net.addAccessPoint('ap3', cls=OVSKernelAP, ssid='ap3-ssid',
-                             channel='1', mode='g', position='599.0,132.0,0')
-    ap2 = net.addAccessPoint('ap2', cls=OVSKernelAP, ssid='ap2-ssid',
-                             channel='1', mode='g', position='458.0,213.0,0')
-    r2 = net.addHost('r2', cls=Node, ip='0.0.0.0')
-    r2.cmd('sysctl -w net.ipv4.ip_forward=1')
-    r1 = net.addHost('r1', cls=Node, ip='0.0.0.0')
-    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
-    r4 = net.addHost('r4', cls=Node, ip='0.0.0.0')
-    r4.cmd('sysctl -w net.ipv4.ip_forward=1')
-    r3 = net.addHost('r3', cls=Node, ip='0.0.0.0')
-    r3.cmd('sysctl -w net.ipv4.ip_forward=1')
+    info( '*** Add switches\n')
+    s1 = net.addSwitch('s1', cls=OVSKernelSwitch, failMode='standalone')
+    s2 = net.addSwitch('s2', cls=OVSKernelSwitch, failMode='standalone')
+    s3 = net.addSwitch('s3', cls=OVSKernelSwitch, failMode='standalone')
+    s4 = net.addSwitch('s4', cls=OVSKernelSwitch, failMode='standalone')
 
-    info( '*** Add hosts/stations\n')
+    info( '*** Add hosts\n')
     h1 = net.addHost('h1', cls=Host, ip='10.0.0.1', defaultRoute=None)
     h2 = net.addHost('h2', cls=Host, ip='10.0.0.2', defaultRoute=None)
-    h4 = net.addHost('h4', cls=Host, ip='10.0.0.4', defaultRoute=None)
     h3 = net.addHost('h3', cls=Host, ip='10.0.0.3', defaultRoute=None)
-
-    info("*** Configuring Propagation Model\n")
-    net.setPropagationModel(model="logDistance", exp=3)
-
-    info("*** Configuring wifi nodes\n")
-    net.configureWifiNodes()
+    h4 = net.addHost('h4', cls=Host, ip='10.0.0.4', defaultRoute=None)
+    h5 = net.addHost('h5', cls=Host, ip='10.0.0.5', defaultRoute=None)
 
     info( '*** Add links\n')
-    net.addLink(h1, ap3)
-    net.addLink(ap3, h3)
-    net.addLink(ap3, h4)
-    net.addLink(r1, r2)
-    net.addLink(r2, r3)
-    net.addLink(r1, h2)
-    net.addLink(r3, r4)
-    net.addLink(r4, ap2)
-    net.addLink(ap2, h1)
+    # example QoS
+    satellite_qos = {'bw':800,'delay':'300ms','loss':1,
+                     'max_queue_size':10,'jitter':'50ms'}
+    home_wifi_qos = {'bw':100,'delay':'2ms','loss':1,
+                     'max_queue_size':10,'jitter':'1ms'}
+    trailer_wifi_qos = {'bw':100,'delay':'2ms','loss':1,
+                     'max_queue_size':10,'jitter':'1ms'}
+    drone_wifi_qos = {'bw':100,'delay':'3ms','loss':1,
+                     'max_queue_size':10,'jitter':'1ms'}
 
-    net.plotGraph(max_x=1000, max_y=1000)
+    net.addLink(h1, s1, cls=TCLink , **home_wifi_qos)
+    net.addLink(s1, s2, cls=TCLink , **satellite_qos)
+    net.addLink(s2, h2, cls=TCLink , **satellite_qos)
+    net.addLink(s2, s3, cls=TCLink , **satellite_qos)
+    net.addLink(s3, s4, cls=TCLink , **trailer_wifi_qos)
+    net.addLink(s4, h3, cls=TCLink , **drone_wifi_qos)
+    net.addLink(s4, h4, cls=TCLink , **drone_wifi_qos)
+    net.addLink(s4, h5, cls=TCLink) # direct link
 
     info( '*** Starting network\n')
     net.build()
@@ -64,15 +56,16 @@ def myNetwork():
     for controller in net.controllers:
         controller.start()
 
-    info( '*** Starting switches/APs\n')
-    net.get('ap3').start([])
-    net.get('ap2').start([])
+    info( '*** Starting switches\n')
+    net.get('s1').start([])
+    net.get('s2').start([])
+    net.get('s3').start([])
+    net.get('s4').start([])
 
-    info( '*** Post configure nodes\n')
+    info( '*** Post configure switches and hosts\n')
 
     CLI(net)
     net.stop()
-
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
