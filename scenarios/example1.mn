@@ -1,0 +1,126 @@
+{
+    "application": {
+        "dpctl": "",
+        "ipBase": "10.0.0.0/8",
+        "netflow": {
+            "nflowAddId": "0",
+            "nflowTarget": "",
+            "nflowTimeout": "600"
+        },
+        "openFlowVersions": {
+            "ovsOf10": "1",
+            "ovsOf11": "0",
+            "ovsOf12": "0",
+            "ovsOf13": "0"
+        },
+        "sflow": {
+            "sflowHeader": "128",
+            "sflowPolling": "30",
+            "sflowSampling": "400",
+            "sflowTarget": ""
+        },
+        "startCLI": "0",
+        "switchType": "ovs",
+        "terminalType": "xterm"
+    },
+    "controllers": [],
+    "hosts": [
+        {
+            "number": "4",
+            "opts": {
+                "hostname": "h4",
+                "nodeNum": 4,
+                "sched": "host"
+            },
+            "x": "257.0",
+            "y": "290.0"
+        },
+        {
+            "number": "2",
+            "opts": {
+                "hostname": "h2",
+                "nodeNum": 2,
+                "sched": "host"
+            },
+            "x": "489.0",
+            "y": "287.0"
+        },
+        {
+            "number": "5",
+            "opts": {
+                "hostname": "h5",
+                "nodeNum": 5,
+                "sched": "host"
+            },
+            "x": "373.0",
+            "y": "390.0"
+        },
+        {
+            "number": "1",
+            "opts": {
+                "hostname": "h1",
+                "nodeNum": 1,
+                "sched": "host"
+            },
+            "x": "373.0",
+            "y": "288.0"
+        },
+        {
+            "number": "3",
+            "opts": {
+                "hostname": "h3",
+                "nodeNum": 3,
+                "sched": "host"
+            },
+            "x": "372.0",
+            "y": "182.0"
+        }
+    ],
+    "links": [
+        {
+            "dest": "h2",
+            "opts": {},
+            "src": "s1"
+        },
+        {
+            "dest": "h3",
+            "opts": {},
+            "src": "s1"
+        },
+        {
+            "dest": "h4",
+            "opts": {
+                "bw": 50,
+                "delay": "2ms",
+                "jitter": "1",
+                "loss": 1,
+                "max_queue_size": 10
+            },
+            "src": "s1"
+        },
+        {
+            "dest": "h5",
+            "opts": {},
+            "src": "s1"
+        },
+        {
+            "dest": "s1",
+            "opts": {},
+            "src": "h1"
+        }
+    ],
+    "switches": [
+        {
+            "number": "1",
+            "opts": {
+                "controllers": [],
+                "hostname": "s1",
+                "nodeNum": 1,
+                "switchType": "legacySwitch"
+            },
+            "x": "257.0",
+            "y": "390.0"
+        }
+    ],
+    "version": "2"
+}

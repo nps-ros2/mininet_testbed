@@ -1,0 +1,13 @@
+# Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
+Publisher, GS, odometry, 10, 500, keep_last, 0, reliable, volatile
+
+# Subscribers, Role, Topic, History, Depth, Reliability, Durability
+Subscriber, red_team, odometry, keep_last, 0, reliable, volatile
+
+# Robot, Name, Role
+Robot, R1, GS
+Robot, R2, red_team
+Robot, R3, red_team
+Robot, R4, red_team
+Robot, R5, red_team
+

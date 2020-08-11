@@ -5,8 +5,10 @@ from os.path import expanduser
 import csv
 from collections import defaultdict
 from json import dumps
-from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
-     QoSReliabilityPolicy, QoSProfile
+if version_info[0] == 3:
+    # Python3 is for ROS2
+    from rclpy.qos import QoSDurabilityPolicy, QoSHistoryPolicy, \
+         QoSReliabilityPolicy, QoSProfile
 
 # ref. https://github.com/ros2/demos/blob/master/topic_monitor/topic_monitor/scripts/data_publisher.py
 def qos_profile(d):
