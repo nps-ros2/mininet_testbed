@@ -85,8 +85,8 @@
         {
             "dest": "s2",
             "opts": {
-                "bw": 800,
-                "delay": "300ms",
+                "bw": 1000,
+                "delay": "400ms",
                 "jitter": "50ms",
                 "loss": 1,
                 "max_queue_size": 10

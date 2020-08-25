@@ -1,0 +1,13 @@
+# Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
+Publisher, peer, odometry, 2, 50, keep_last, 0, reliable, volatile
+
+# Subscribers, Role, Topic, History, Depth, Reliability, Durability
+Subscriber, peer, odometry, keep_last, 0, reliable, volatile
+
+# Robot, Name, Role
+Robot, h1, peer
+Robot, h2, peer
+Robot, h3, peer
+Robot, h4, peer
+Robot, h5, peer
+
