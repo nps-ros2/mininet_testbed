@@ -111,7 +111,7 @@ def latency_points(datapoints, max_ms_latency):
     return time_points_x, latency_points_y, \
            count_total, count_dropped, count_outliers
 
-def latency_histogram(datapoints, max_ms_latency):
+def latency_averages(datapoints, max_ms_latency):
     # datapoints are:
     # from, to, topic, time, bar_time, size, latency, %loss
     count_total = 0
@@ -144,7 +144,7 @@ def latency_histogram(datapoints, max_ms_latency):
 
     return latencies_x, latencies_y, count_total, count_dropped, count_outliers
 
-def throughput_histogram(datapoints):
+def throughput_averages(datapoints, bar_period):
     # datapoints are:
     # from, to, topic, time, bar_time, size, latency, %loss
     bar_throughputs = defaultdict(list)
@@ -153,8 +153,9 @@ def throughput_histogram(datapoints):
     for point in datapoints:
             bar_time = point[4]
             size = point[5]
+            throughput = size / bar_period
             key = ("%s, %s, %s"%(point[:3]), bar_time)
-            bar_throughputs[key].append(size)
+            bar_throughputs[key].append(throughput)
 
     # get plottable latencies
     throughputs_x = defaultdict(list)
@@ -167,7 +168,7 @@ def throughput_histogram(datapoints):
 
     return throughputs_x, throughputs_y
 
-def loss_histogram(datapoints):
+def loss_averages(datapoints):
     # datapoints are:
     # from, to, topic, time, bar_time, size, latency, %loss
     bar_losses = defaultdict(list)
@@ -192,69 +193,47 @@ def loss_histogram(datapoints):
 
 def plot_latency_points(plots_x, plots_y, args,
                         total, dropped, outliers):
-    plt.clf()
     if outliers == 1:
         plural = ""
     else:
         plural = "s"
-    plt.title("Latency point graph for %s\n(%d of %d messages failed, %d "
-              "outlier%s dropped)"%(
-              args.dataset_name, dropped, total, outliers, plural))
+    plt.title("Latency points\n(%d of %d messages failed, %d "
+              "outlier%s dropped)"%(dropped, total, outliers, plural))
     plt.ylabel("Latency in milliseconds")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
         plt.plot(plots_x[key], plots_y[key], '.', markersize=2,
                  label="%s, %d datapoints"%(key, len(plots_x[key])))
     plt.legend()
-    if args.write_file:
-        plt.savefig("%s_latency_points.png"%args.write_file)
-    else:
-        plt.show()
 
 def plot_latency_trend(plots_x, plots_y, args, total, dropped, outliers):
-    plt.clf()
     if outliers == 1:
         plural = ""
     else:
         plural = "s"
-    plt.title("Latency graph for %s\n(%d of %d messages failed, %d "
-              "outlier%s dropped)"%(
-              args.dataset_name, dropped, total, outliers, plural))
+    plt.title("Averaged latency\n(%d of %d messages failed, %d "
+              "outlier%s dropped)"%(dropped, total, outliers, plural))
     plt.ylabel("Latency in milliseconds")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
         plt.plot(plots_x[key], plots_y[key], '-', markersize=2, label=key)
     plt.legend()
-    if args.write_file:
-        plt.savefig("%s_latency.png"%args.write_file)
-    else:
-        plt.show()
 
 def plot_throughput_trend(plots_x, plots_y, args):
-    plt.clf()
-    plt.title("Byte throughput graph for %s"%args.dataset_name)
+    plt.title("Averaged byte throughput")
     plt.ylabel("Bytes per second")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
         plt.plot(plots_x[key], plots_y[key], '-', markersize=2, label=key)
     plt.legend()
-    if args.write_file:
-        plt.savefig("%s_throughput.png"%args.write_file)
-    else:
-        plt.show()
 
 def plot_loss_trend(plots_x, plots_y, args):
-    plt.clf()
-    plt.title("Packet loss graph for %s"%args.dataset_name)
+    plt.title("Packet loss")
     plt.ylabel("%Packets lost")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
         plt.plot(plots_x[key], plots_y[key], '-', markersize=2, label=key)
     plt.legend()
-    if args.write_file:
-        plt.savefig("%s_loss.png"%args.write_file)
-    else:
-        plt.show()
 
 if __name__=="__main__":
 
@@ -268,7 +247,7 @@ if __name__=="__main__":
                 help="The maximum ms latency allowed without being dropped.",
                         default = 20)
     parser.add_argument("-b","--bar_period", type=int,
-                help="The time, in seconds, for each histogram bar.",
+                help="The time, in seconds, for each averaged period.",
                         default = 5)
     parser.add_argument("-w","--write_file", type=str,
                     help="Write to <filename>_<plot_type>.png.",
@@ -277,7 +256,12 @@ if __name__=="__main__":
 
     datapoints = read_datapoints(args.input_file, args.bar_period)
 
+    # plots
+    plt.figure(figsize=(12,10), dpi=90)
+    plt.suptitle("QoS for %s"%args.dataset_name)
+
     # latency points
+    plt.subplot(2,2,1)
     time_points_x, latency_points_y, \
                       count_total, count_dropped, count_outliers = \
                       latency_points(datapoints, args.max_ms_latency)
@@ -285,16 +269,26 @@ if __name__=="__main__":
                         count_total, count_dropped, count_outliers)
 
     # latency bar averages
+    plt.subplot(2,2,2)
     latencies_x, latencies_y, count_total, count_dropped, count_outliers = \
-                 latency_histogram(datapoints, args.max_ms_latency)
+                 latency_averages(datapoints, args.max_ms_latency)
     plot_latency_trend(latencies_x, latencies_y, args,
                        count_total, count_dropped, count_outliers)
 
     # bytes throughput
-    throughputs_x, throughputs_y = throughput_histogram(datapoints)
+    plt.subplot(2,2,3)
+    throughputs_x, throughputs_y = throughput_averages(datapoints,
+                                                       args.bar_period)
     plot_throughput_trend(throughputs_x, throughputs_y, args)
 
     # % loss
-    throughputs_x, throughputs_y = loss_histogram(datapoints)
+    plt.subplot(2,2,4)
+    throughputs_x, throughputs_y = loss_averages(datapoints)
     plot_loss_trend(throughputs_x, throughputs_y, args)
+
+    # to screen or file
+    if args.write_file:
+        plt.savefig("%s.png"%args.write_file)
+    else:
+        plt.show()
 
