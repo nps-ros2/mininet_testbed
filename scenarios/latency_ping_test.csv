@@ -1,0 +1,13 @@
+# Subscribers, Role, Topic, History, Depth, Reliability, Durability
+Subscriber, rx, message, keep_last, 0, reliable, volatile
+
+# Publisher, Role, Topic, Frequency, Size, History, Depth, Reliability, Durability
+Publisher, tx, message, 100, 40, keep_last, 0, reliable, volatile
+
+# Robot, Name, Role
+Robot, h1, tx
+Robot, h2, tx
+Robot, h3, tx
+Robot, h4, tx
+Robot, h5, rx
+

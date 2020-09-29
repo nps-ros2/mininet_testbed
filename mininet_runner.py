@@ -31,8 +31,8 @@ def start_robots(net, robots, csv_file, out_file):
             print("Error with robot name '%s'"%robot_name)
         net[robot_name].cmd(cmd)
 
-    # start Wireshark on first node object (first robot)
-    net[robots[0]["robot_name"]].cmd("wireshark &")
+#    # start Wireshark on first node object (first robot)
+#    net[robots[0]["robot_name"]].cmd("wireshark &")
 
 if __name__ == '__main__':
     # args

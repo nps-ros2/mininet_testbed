@@ -32,13 +32,13 @@ def myNetwork():
 
     info( '*** Add links\n')
     # example QoS
-    satellite_qos = {'bw':1000,'delay':'400ms','loss':1,
+    satellite_qos = {'bw':1000,'delay':'400ms','loss':0,
                      'max_queue_size':10,'jitter':'50ms'}
-    home_wifi_qos = {'bw':100,'delay':'2ms','loss':1,
+    home_wifi_qos = {'bw':100,'delay':'2ms','loss':0,
                      'max_queue_size':10,'jitter':'1ms'}
-    trailer_wifi_qos = {'bw':100,'delay':'2ms','loss':1,
+    trailer_wifi_qos = {'bw':100,'delay':'2ms','loss':0,
                      'max_queue_size':10,'jitter':'1ms'}
-    drone_wifi_qos = {'bw':100,'delay':'3ms','loss':1,
+    drone_wifi_qos = {'bw':100,'delay':'3ms','loss':0,
                      'max_queue_size':10,'jitter':'1ms'}
 
     net.addLink(h1, s1, cls=TCLink , **home_wifi_qos)

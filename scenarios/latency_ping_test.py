@@ -22,6 +22,7 @@ def myNetwork():
     s2 = net.addSwitch('s2', cls=OVSKernelSwitch, failMode='standalone')
     s3 = net.addSwitch('s3', cls=OVSKernelSwitch, failMode='standalone')
     s4 = net.addSwitch('s4', cls=OVSKernelSwitch, failMode='standalone')
+    s5 = net.addSwitch('s5', cls=OVSKernelSwitch, failMode='standalone')
 
     info( '*** Add hosts\n')
     h1 = net.addHost('h1', cls=Host, ip='10.0.0.1', defaultRoute=None)
@@ -31,24 +32,16 @@ def myNetwork():
     h5 = net.addHost('h5', cls=Host, ip='10.0.0.5', defaultRoute=None)
 
     info( '*** Add links\n')
-    # example QoS
-    satellite_qos = {'bw':1000,'delay':'400ms','loss':None,
-                     'max_queue_size':10,'jitter':'50ms'}
-    home_wifi_qos = {'bw':100,'delay':'2ms','loss':None,
-                     'max_queue_size':10,'jitter':'1ms'}
-    trailer_wifi_qos = {'bw':100,'delay':'2ms','loss':None,
-                     'max_queue_size':10,'jitter':'1ms'}
-    drone_wifi_qos = {'bw':100,'delay':'3ms','loss':None,
-                     'max_queue_size':10,'jitter':'1ms'}
-
-    net.addLink(h1, s1, cls=TCLink , **home_wifi_qos)
-    net.addLink(s1, s2, cls=TCLink , **satellite_qos)
-    net.addLink(s2, h2, cls=TCLink , **satellite_qos)
-    net.addLink(s2, s3, cls=TCLink , **satellite_qos)
-    net.addLink(s3, s4, cls=TCLink , **trailer_wifi_qos)
-    net.addLink(s4, h3, cls=TCLink , **drone_wifi_qos)
-    net.addLink(s4, h4, cls=TCLink , **drone_wifi_qos)
-    net.addLink(s4, h5, cls=TCLink) # direct link
+    network_performance = {'delay':'600ms'}
+    net.addLink(s1, s2, cls=TCLink , **network_performance)
+    net.addLink(s2, s3, cls=TCLink , **network_performance)
+    net.addLink(s3, s4, cls=TCLink , **network_performance)
+    net.addLink(s4, s5, cls=TCLink , **network_performance)
+    net.addLink(h1, s1)
+    net.addLink(h2, s2)
+    net.addLink(h3, s3)
+    net.addLink(h4, s4)
+    net.addLink(h5, s5)
 
     info( '*** Starting network\n')
     net.build()
@@ -61,14 +54,15 @@ def myNetwork():
     net.get('s2').start([])
     net.get('s3').start([])
     net.get('s4').start([])
+    net.get('s5').start([])
 
     info( '*** Post configure switches and hosts\n')
-
-#    CLI(net)
-#    net.stop()
     return net
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    myNetwork()
+    net = myNetwork()
+
+    CLI(net)
+    net.stop()
 

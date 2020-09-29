@@ -211,7 +211,7 @@ def plot_latency_trend(plots_x, plots_y, args, total, dropped, outliers):
         plural = ""
     else:
         plural = "s"
-    plt.title("Averaged latency\n(%d of %d messages failed, %d "
+    plt.title("Average latency\n(%d of %d messages failed, %d "
               "outlier%s dropped)"%(dropped, total, outliers, plural))
     plt.ylabel("Latency in milliseconds")
     plt.xlabel("Time in seconds")
@@ -220,7 +220,7 @@ def plot_latency_trend(plots_x, plots_y, args, total, dropped, outliers):
     plt.legend()
 
 def plot_throughput_trend(plots_x, plots_y, args):
-    plt.title("Averaged byte throughput")
+    plt.title("Average byte throughput")
     plt.ylabel("Bytes per second")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
@@ -228,7 +228,7 @@ def plot_throughput_trend(plots_x, plots_y, args):
     plt.legend()
 
 def plot_loss_trend(plots_x, plots_y, args):
-    plt.title("Packet loss")
+    plt.title("% Packet loss")
     plt.ylabel("%Packets lost")
     plt.xlabel("Time in seconds")
     for key in sorted(list(plots_x.keys())):
@@ -245,7 +245,7 @@ if __name__=="__main__":
                     help="The name of this dataset.")
     parser.add_argument("-m","--max_ms_latency", type=float,
                 help="The maximum ms latency allowed without being dropped.",
-                        default = 20)
+                        default = 10000)
     parser.add_argument("-b","--bar_period", type=int,
                 help="The time, in seconds, for each averaged period.",
                         default = 5)
@@ -257,8 +257,8 @@ if __name__=="__main__":
     datapoints = read_datapoints(args.input_file, args.bar_period)
 
     # plots
-    plt.figure(figsize=(12,10), dpi=90)
-    plt.suptitle("QoS for %s"%args.dataset_name)
+    plt.figure(figsize=(12,10))
+    plt.suptitle(args.dataset_name)
 
     # latency points
     plt.subplot(2,2,1)
